@@ -705,8 +705,8 @@ def analyze_resume(request):
             )
 
             # Send messages to get responses
-            response1 = chat_session.send_message("Analyze the resume for suitable job matches...")
-            response3 = chat_session.send_message("Analyze the resume and suggest points to improve...")
+            response1 = chat_session.send_message("Analyze the resume for suitable job matches. when listing, provide details such as job title, average salary a person could get in INR and why it is suitable. dont provide any other data. show job title at the beggining. avoid heading like suitable jobs too. use you/your for pointing to the person and display the best job that suets the user. also include ':' after the heading.")
+            response3 = chat_session.send_message("Analyze the resume and suggest points to improve the quality of the resume and ATS score. dont provide any other data. avoid heading like resume improvements too. use you/your for pointing to the person")
 
             suitable_jobs = response1.text.replace('#', '').replace('*', '')
             improve_resume = response3.text.replace('#', '').replace('*', '')
