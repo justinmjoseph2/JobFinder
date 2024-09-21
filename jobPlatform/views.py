@@ -638,7 +638,8 @@ def login_required_custom(view_func):
 # View function to handle resume uploads and analysis
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from .models import ResumeUpload
+from google.generativeai import files as genai_files  # Update to handle direct file uploads
 
 @login_required_custom
 def analyze_resume(request):
@@ -650,67 +651,78 @@ def analyze_resume(request):
         if not isinstance(resume, InMemoryUploadedFile):
             return render(request, 'upload_resume.html', {'error': 'Invalid file format.'})
 
-        # Read the file content into memory without saving it to the server
+        # Read the file content into memory (as bytes)
         resume_content = resume.read()
 
-        # Upload the in-memory resume to Google Gemini without saving locally
-        gemini_file = upload_to_gemini(resume_content, mime_type='application/pdf')
+        # Upload the resume content directly to Google Gemini as an in-memory file
+        try:
+            # Assuming the upload function can take file-like objects, adjust accordingly
+            gemini_file = genai_files.upload_file(
+                resume_content, 
+                filename=resume.name,  # Pass the original file name if needed
+                mime_type='application/pdf'
+            )
 
-        # Wait for the file to be ready on Google Gemini
-        wait_for_files_active([gemini_file])
+            # Wait for the file to be ready on Google Gemini
+            wait_for_files_active([gemini_file])
 
-        # Set up the model configuration for generating responses
-        generation_config = {
-            "temperature": 1,
-            "top_p": 0.95,
-            "top_k": 64,
-            "max_output_tokens": 8192,
-            "response_mime_type": "text/plain",
-        }
+            # Set up the model configuration for generating responses
+            generation_config = {
+                "temperature": 1,
+                "top_p": 0.95,
+                "top_k": 64,
+                "max_output_tokens": 8192,
+                "response_mime_type": "text/plain",
+            }
 
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            generation_config=generation_config
-        )
+            model = genai.GenerativeModel(
+                model_name="gemini-1.5-flash",
+                generation_config=generation_config
+            )
 
-        # Start chat session with the model, sending the uploaded resume directly
-        chat_session = model.start_chat(
-            history=[
-                {
-                    "role": "user",
-                    "parts": [
-                        gemini_file,
-                        "",
-                    ],
-                }
-            ]
-        )
+            # Start chat session with the model, sending the uploaded resume directly
+            chat_session = model.start_chat(
+                history=[
+                    {
+                        "role": "user",
+                        "parts": [
+                            gemini_file,
+                            "",
+                        ],
+                    }
+                ]
+            )
 
-        # Send messages to get responses for suitable jobs and resume improvements
-        response1 = chat_session.send_message("Analyze the resume for suitable job matches. When listing, provide details such as job title, average salary a person could get in INR, and why it is suitable. Don't provide any other data. Show job title at the beginning, avoid heading like 'suitable jobs', and use 'you/your' for pointing to the person.")
-        response3 = chat_session.send_message("Analyze the resume and suggest points to improve the quality of the resume and ATS score. Don't provide any other data. Avoid heading like 'resume improvements' and use 'you/your' for pointing to the person.")
+            # Send messages to get responses for suitable jobs and resume improvements
+            response1 = chat_session.send_message("Analyze the resume for suitable job matches. When listing, provide details such as job title, average salary a person could get in INR, and why it is suitable. Don't provide any other data. Show job title at the beginning, avoid heading like 'suitable jobs', and use 'you/your' for pointing to the person.")
+            response3 = chat_session.send_message("Analyze the resume and suggest points to improve the quality of the resume and ATS score. Don't provide any other data. Avoid heading like 'resume improvements' and use 'you/your' for pointing to the person.")
 
-        # Clean up the responses by removing unwanted characters
-        suitable_jobs = response1.text.replace('#', '').replace('*', '')
-        improve_resume = response3.text.replace('#', '').replace('*', '')
+            # Clean up the responses by removing unwanted characters
+            suitable_jobs = response1.text.replace('#', '').replace('*', '')
+            improve_resume = response3.text.replace('#', '').replace('*', '')
 
-        # Preprocess the data for rendering
-        def process_data(data):
-            result = []
-            for line in data.splitlines():
-                if ':' in line:
-                    parts = line.split(':', 1)
-                    result.append({'title': parts[0].strip(), 'description': parts[1].strip()})
-                else:
-                    result.append({'title': '', 'description': line.strip()})
-            return result
+            # Preprocess the data for rendering
+            def process_data(data):
+                result = []
+                for line in data.splitlines():
+                    if ':' in line:
+                        parts = line.split(':', 1)
+                        result.append({'title': parts[0].strip(), 'description': parts[1].strip()})
+                    else:
+                        result.append({'title': '', 'description': line.strip()})
+                return result
 
-        context = {
-            'suitable_jobs': process_data(suitable_jobs),
-            'improve_resume': process_data(improve_resume)
-        }
+            context = {
+                'suitable_jobs': process_data(suitable_jobs),
+                'improve_resume': process_data(improve_resume)
+            }
 
-        return render(request, 'analyze_resume.html', context)
+            return render(request, 'analyze_resume.html', context)
+        
+        except Exception as e:
+            # Handle upload errors gracefully
+            print(f"Error during file upload: {str(e)}")
+            return render(request, 'upload_resume.html', {'error': 'Failed to analyze resume.'})
 
     return render(request, 'upload_resume.html')
 
