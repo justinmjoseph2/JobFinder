@@ -1,5 +1,3 @@
-from django.conf import settings
-from django.conf.urls.static import static
 from django.urls import path
 from . import views
 
@@ -101,8 +99,6 @@ urlpatterns = [
     path('forgot-password/reset-password-admin/<uuid:token>/', views.reset_password_admin, name='reset_password_admin'), 
 
 ]
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
     
