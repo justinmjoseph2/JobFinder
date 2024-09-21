@@ -638,8 +638,8 @@ def login_required_custom(view_func):
 # View function to handle resume uploads and analysis
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from .models import ResumeUpload
-from google.generativeai import files as genai_files  # Update to handle direct file uploads
+from django.core.files.uploadedfile import InMemoryUploadedFile  # Import this to fix the error
+from google.generativeai import files as genai_files
 
 @login_required_custom
 def analyze_resume(request):
@@ -727,8 +727,7 @@ def analyze_resume(request):
     return render(request, 'upload_resume.html')
 
 
-# views.py
-# views.py
+
 from django.shortcuts import render
 from .models import Job
 
