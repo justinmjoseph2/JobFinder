@@ -50,8 +50,9 @@
                             <tbody>
                                 {% for provider in providers %}
                                     <tr>
-                                        <td><img src="{{ provider.company_logo.url }}" alt="Logo" style="width: 50px; height: auto;"></td>
+                                        
                                         <th scope="row">{{ forloop.counter }}</th>
+                                        <td><img src="{{ provider.company_logo.url }}" alt="Logo" style="width: 50px; height: auto;"></td>
                                         <td>{{ provider.provider_name }}</td>
                                         <td>{{ provider.company_name }}</td>
                                         <td>{{ provider.email }}</td>
