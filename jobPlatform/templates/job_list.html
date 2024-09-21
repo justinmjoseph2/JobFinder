@@ -73,7 +73,7 @@
                     <select name="provider" class="form-control">
                         <option value="">All Providers</option>
                         {% for provider in providers %}
-                            <option value="{{ provider.id }}" {% if request.GET.provider == provider.id|stringformat:"s" %}selected{% endif %}>{{ provider.provider_name }}</option>
+                            <option value="{{ provider.id }}" {% if request.GET.provider == provider.id|stringformat:"s" %}selected{% endif %}>{{ provider.company_name }}</option>
                         {% endfor %}
                     </select>
                 </div>
