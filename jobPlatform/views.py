@@ -645,7 +645,6 @@ def login_required_custom(view_func):
 
 
 
-# View function to handle resume uploads and analysis
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import ResumeUpload
@@ -653,7 +652,7 @@ import cloudinary
 import cloudinary.uploader
 import os
 
-@login_required_custom
+@login_required
 def analyze_resume(request):
     if request.method == 'POST' and request.FILES.get('resume'):
         # Handle file upload
@@ -704,6 +703,7 @@ def analyze_resume(request):
         response1 = chat_session.send_message("Analyze the resume for suitable job matches...")
         response3 = chat_session.send_message("Analyze the resume and suggest points to improve...")
 
+
         suitable_jobs = response1.text.replace('#', '').replace('*', '')
         improve_resume = response3.text.replace('#', '').replace('*', '')
 
@@ -726,7 +726,6 @@ def analyze_resume(request):
         return render(request, 'analyze_resume.html', context)
 
     return render(request, 'upload_resume.html')
-
 
 # views.py
 # views.py
@@ -2138,3 +2137,10 @@ from .models import Provider
 from django.utils import timezone
 import calendar
 
+
+
+import cloudinary
+import cloudinary.utils
+
+def get_signed_url(public_id):
+    return cloudinary.utils.cloudinary_url(public_id, sign=True)
