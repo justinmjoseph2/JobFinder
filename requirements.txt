@@ -10,7 +10,7 @@ django-widget-tweaks>=1.4
 xhtml2pdf
 pydotplus
 graphviz
-google-generativeai==1.0.0
+google-generativeai
 IPython
 speechrecognition>=3.8.1
 mediapipe>=0.10.4
