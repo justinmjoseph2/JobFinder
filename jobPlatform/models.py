@@ -82,6 +82,7 @@ from django.contrib.auth.models import User
 
 class ResumeUpload(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='resumes')
+    fileName = models.CharField(max_length=100)
     uploaded_file = models.FileField(upload_to='resumes/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
