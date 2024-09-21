@@ -115,6 +115,31 @@
                                     <a href="{% url 'reg1' %}" class="btn head-btn1">Register</a>
                                     <a href="{% url 'log1' %}" class="btn head-btn2">Login</a>
                                 </div>
+                                <li class="d-shop-cart">
+                                  
+                                    <ul class="minicart">
+                                      <li>
+                                          <div class="row">
+                                              <div class="col-xl-12">
+                                                  <!-- form -->
+                                                  <form method="get" action="{% url 'job_search' %}" class="search-box">
+                                                      <div class="input-form" style="height: auto; width: auto;">
+                                                          <input type="text" name="q" placeholder="Job Title, Category, or Skill">
+                                                      </div>
+                                                      <div class="search-form">
+                                                          <button class="btn head-btn1" style="height: 100%; width: auto;" type="submit">Find job</button>
+                                                      </div>
+                                                  </form>
+                                              </div>
+                                          </div>
+                                      </li>
+                
+                                      <li>
+                                      </li>
+                                      <li>
+                                      </li>
+                                    </ul>
+                                  </li>
                                 {% endif %}
 
                             </div>
