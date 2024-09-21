@@ -1,0 +1,168 @@
+{% extends 'base2.html' %}
+
+{% block content %}
+{% load static %}
+
+<style>
+    #navigation a {
+        color: inherit; /* Original color */
+        transition: color 0.3s ease; /* Smooth transition for color change */
+    }
+
+    #navigation a:hover {
+        color: black; /* Color on mouse over */
+    }
+
+    /* Custom style for form fields */
+    .form-control {
+        width: 100%;
+    }
+
+    /* Style adjustments for form layout */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<body style="background: url('{% static 'assets/img/elements/back.png' %}') no-repeat center center; background-size: cover;">
+<div class="container d-flex justify-content-center align-items-center vh-100" style="margin-top: 5%; margin-bottom: 5%;">
+    <div class="card shadow-sm w-50">
+        <div class="card-header" style="background-color: #fb246a; border-color: #fb246a; color: white; text-align: center;">
+            <h4>Edit Job</h4>
+        </div>
+        <div class="card-body">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Title -->
+                <div class="form-group">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">Title</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.title.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Experience -->
+                <div class="form-group">
+                    <label for="{{ form.experience.id_for_label }}" class="form-label">Experience</label>
+                    {{ form.experience }}
+                    {% if form.experience.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.experience.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Category -->
+                <div class="form-group">
+                    <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.category.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Job Type -->
+                <div class="form-group">
+                    <label for="{{ form.job_type.id_for_label }}" class="form-label">Job Type</label>
+                    {{ form.job_type }}
+                    {% if form.job_type.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.job_type.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.description.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Salary -->
+                <div class="form-group">
+                    <label for="{{ form.salary.id_for_label }}" class="form-label">Salary</label>
+                    {{ form.salary }}
+                    {% if form.salary.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.salary.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Vacancies -->
+                <div class="form-group">
+                    <label for="{{ form.vacancies.id_for_label }}" class="form-label">Vacancies</label>
+                    {{ form.vacancies }}
+                    {% if form.vacancies.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.vacancies.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Link -->
+                <div class="form-group">
+                    <label for="{{ form.link.id_for_label }}" class="form-label">Link</label>
+                    {{ form.link }}
+                    {% if form.link.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.link.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Location -->
+                <div class="form-group">
+                    <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
+                    {{ form.location }}
+                    {% if form.location.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.location.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Skills -->
+                <div class="form-group">
+                    <label for="{{ form.skills.id_for_label }}" class="form-label">Skills</label>
+                    {{ form.skills }}
+                    {% if form.skills.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.skills.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Till Date -->
+                <div class="form-group">
+                    <label for="{{ form.till_date.id_for_label }}" class="form-label">Till Date</label>
+                    {{ form.till_date }}
+                    {% if form.till_date.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.till_date.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center mt-3">
+                    <button type="submit" class="btn" style="background-color: #fb246a; color: white;">Save Changes</button>
+                    <a href="{% url 'manage_jobs' %}" class="btn btn-secondary mx-2">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+{% endblock content %}

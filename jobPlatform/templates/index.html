@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+    <main>
+
+        <!-- slider Area Start-->
+        <div class="slider-area ">
+            <!-- Mobile Menu -->
+            <div class="slider-active">
+                <div class="single-slider slider-height d-flex align-items-center" data-background="{% static 'assets/img/hero/h1_hero.jpg' %}">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-xl-6 col-lg-9 col-md-10">
+                                <div class="hero__caption">
+                                    <h1>Discover the best career opportunities.</h1>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Search Box -->
+                        <div class="row">
+                            <div class="col-xl-12">
+                                <!-- form -->
+                                <form method="get" action="{% url 'job_search' %}" class="search-box">
+                                    <div class="input-form">
+                                        <input type="text" name="q" placeholder="Job Title, Category, or Skill">
+                                    </div>
+                                    <div class="search-form">
+                                        <button class="btn head-btn1" style="height: 100%; width: auto;" type="submit">Find job</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- slider Area End-->
+        <!-- How  Apply Process Start-->
+        <div class="apply-process-area apply-bg pt-150 pb-150" data-background="{% static 'assets/img/gallery/how-applybg.png' %}">
+            <div class="container">
+                <!-- Section Tittle -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section-tittle white-text text-center">
+                            <span>Apply process</span>
+                            <h2> How it works</h2>
+                        </div>
+                    </div>
+                </div>
+                <!-- Apply Process Caption -->
+                <div class="row">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="single-process text-center mb-30">
+                            <div class="process-ion">
+                                <span class="flaticon-search"></span>
+                            </div>
+                            <div class="process-cap">
+                               <h5>1. Search a job</h5>
+                               <p>Explore your dream career by searching for it, or upload your resume to find out which job aligns best with your skills and interests.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="single-process text-center mb-30">
+                            <div class="process-ion">
+                                <span class="flaticon-curriculum-vitae"></span>
+                            </div>
+                            <div class="process-cap">
+                               <h5>2. Apply for job</h5>
+                               <p>Apply for the job that you find interesting and wait for the provider's timely response, which may include an interview or additional information request.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="single-process text-center mb-30">
+                            <div class="process-ion">
+                                <span class="flaticon-tour"></span>
+                            </div>
+                            <div class="process-cap">
+                               <h5>3. Get your job</h5>
+                               <p>Celebrate your achievements upon securing the position. Embark on a fulfilling professional journey towards realizing your dreams.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+             </div>
+        </div>
+        <!-- How  Apply Process End-->
+
+         <!-- Support Company Start-->
+         <div class="support-company-area support-padding fix" style="margin-bottom: 5%; margin-top: 5%;">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="right-caption">
+                            <!-- Section Tittle -->
+                            <div class="section-tittle section-tittle2">
+                                <span>What we are doing</span>
+                                <h2>Many people are getting jobs</h2>
+                            </div>
+                            <div class="support-caption">
+                                <p style="text-align: justify;">At our platform, we are committed to bridging the gap between job seekers and employers with a seamless and efficient job-matching experience. Job providers can effortlessly post job openings, while job seekers can explore a diverse range of opportunities tailored to their skills and preferences. Our advanced recommendation system leverages uploaded resumes to suggest the most suitable job matches, ensuring that candidates are presented with roles that align perfectly with their career goals and qualifications.</p>
+                                <p style="text-align: justify;">For employers, our platform offers a powerful tool to connect with potential candidates who are genuinely interested in their job postings. By analyzing the resumes and preferences of applicants, we help employers identify the most suitable candidates quickly and efficiently. This dual approach—empowering job seekers to find their dream jobs and assisting employers in discovering top talent—creates a dynamic and productive job market, fostering meaningful connections between skilled professionals and forward-thinking companies.</p>
+                                <a href="{% url 'login_provider' %}" class="btn post-btn">Post a job</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="support-location-img">
+                            <img src="{% static 'assets/img/service/support-img.jpg' %}" alt="">
+                            <div class="support-img-cap text-center">
+                                <p>Since</p>
+                                <span>2023</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Support Company End-->
+
+
+    </main>
+    {% endblock %}

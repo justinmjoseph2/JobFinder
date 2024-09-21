@@ -1,0 +1,106 @@
+{% extends 'base2.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5" style="margin-top: 5%; margin-bottom: 5%;">
+    <h2 class="text-center mb-4">Your Notifications</h2>
+
+    {% if notifications %}
+        <div class="list-group">
+            {% for notification in notifications %}
+                <div class="list-group-item d-flex justify-content-between align-items-start {% if not notification.is_read %}list-group-item-info{% endif %}">
+                    <div class="w-100">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ notification.notification_type|capfirst }}</h5>
+                            <small class="text-muted">{{ notification.created_at|date:"d M Y H:i" }}</small>
+                        </div>
+                        <p class="mb-1">{{ notification.message }}</p>
+                    </div>
+                    <button type="button" class="btn-close" aria-label="Close" data-id="{{ notification.id }}"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            No notifications found.
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle click event for close buttons
+    document.querySelectorAll('.btn-close').forEach(function(button) {
+        button.addEventListener('click', function() {
+            var notificationId = this.getAttribute('data-id');
+            var notificationElement = this.closest('.list-group-item');
+
+            // Send a request to the server to delete the notification
+            fetch(`/notifications/delete/${notificationId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Remove the notification from the DOM
+                    notificationElement.remove();
+                } else {
+                    alert('Failed to delete notification.');
+                }
+            });
+        });
+    });
+});
+</script>
+
+<style>
+    .list-group-item {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        padding: 15px;
+        position: relative; /* Relative positioning for the close button */
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .list-group-item-info {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+    }
+
+    .btn-close {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        border: none;
+        background: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: #000; /* You can adjust the color as needed */
+    }
+
+    .btn-close::before {
+        content: "×"; /* Unicode character for multiplication sign */
+        font-size: 1.5rem; /* Size of the close icon */
+    }
+
+    .alert-info {
+        background-color: #e7f0f7;
+        border-color: #b6d4fe;
+        color: #0c5460;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+</style>
+
+{% endblock %}

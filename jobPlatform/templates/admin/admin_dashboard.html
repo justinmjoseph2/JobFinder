@@ -1,0 +1,216 @@
+{% extends 'admin/header.html' %}
+{% block content %}
+{% load static %}
+
+
+            <!-- Sale & Revenue Start -->
+            <div class="container-fluid pt-4 px-4">
+                <div class="row g-4">
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="bg-secondary rounded d-flex align-items-center justify-content-between p-4">
+                            <i class="fa fa-users fa-3x text-primary"></i>
+                            <div class="ms-3">
+                                <p class="mb-2">Total Providers</p>
+                                <h6 class="mb-0">{{ provider_count }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="bg-secondary rounded d-flex align-items-center justify-content-between p-4">
+                            <i class="fa fa-user fa-3x text-primary"></i>
+                            <div class="ms-3">
+                                <p class="mb-2">Total Customers</p>
+                                <h6 class="mb-0">{{ customer_count }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="bg-secondary rounded d-flex align-items-center justify-content-between p-4">
+                            <i class="fa fa-briefcase fa-3x text-primary"></i>
+                            <div class="ms-3">
+                                <p class="mb-2">Total Jobs</p>
+                                <h6 class="mb-0">{{ job_count }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="bg-secondary rounded d-flex align-items-center justify-content-between p-4">
+                            <i class="fa fa-tags fa-3x text-primary"></i>
+                            <div class="ms-3">
+                                <p class="mb-2">Total Categories</p>
+                                <h6 class="mb-0">{{ category_count }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Sale & Revenue End -->
+
+            <!-- Recent Sales Start -->
+            <div class="container-fluid pt-4 px-4">
+                <!-- Existing code for the chart -->
+            
+                <div class="bg-secondary text-center rounded p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="mb-0">Jobs</h6>
+                        <a href="{% url 'job_list' %}">Show All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table text-start align-middle table-bordered table-hover mb-0">
+                            <thead>
+                                <tr class="text-white">
+                                    <th scope="col">#</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col">Category</th>
+                                    <th scope="col">Company</th>
+                                    <th scope="col">Location</th>
+                                    <th scope="col">Salary</th>
+                                    <th scope="col">Experience  (Years)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in last_5_jobs %}
+                                <tr>
+                                    <th scope="row">{{ forloop.counter }}</th>
+                                    <td>{{ job.title }}</td>
+                                    <td>{{ job.category.name }}</td>
+                                    <td>{{ job.provider.company_name }}</td>
+                                    <td>{{ job.location }}</td>
+                                    <td>${{ job.salary }}</td>
+                                    <td>{{ job.experience }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">No jobs found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Sales End -->
+
+
+            <!-- Widgets Start -->
+            <div class="container-fluid pt-4 px-4">
+                <div class="row g-4">
+                    <div class="col-sm-12 col-md-6 col-xl-4">
+                            <div class="h-100 bg-secondary rounded p-4">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <h6 class="mb-0">Providers</h6>
+                                    <a href="{% url 'provider_list' %}">Show All</a>
+                                </div>
+                                {% for provider in last_5_providers %}
+                                <div class="d-flex align-items-center border-bottom py-3">
+                                    <img class="rounded-circle flex-shrink-0" src="{{ provider.company_logo.url }}" alt="" style="width: 40px; height: 40px;">
+                                    <div class="w-100 ms-3">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-0">{{ provider.company_name }}</h6>
+                                            <small>{{ provider.created_on|date:"d M Y" }}</small>
+                                        </div>
+                                        <span>{{ provider.email }}</span>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No providers found</td>
+                                </tr>
+                                {% endfor %}
+                            </div>
+                    </div>
+                    <div class="col-sm-12 col-md-6 col-xl-4">
+                        <div class="h-100 bg-secondary rounded p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-4">
+                                <h6 class="mb-0">Calender</h6>
+                            </div>
+                            <div id="calender"></div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-6 col-xl-4">
+                        <div class="h-100 bg-secondary rounded p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-4">
+                                <h6 class="mb-0">Categories</h6>
+                                <a href="{% url 'category_list' %}">Show All</a>
+                            </div>
+                            <div class="category-list">
+                                {% for category in categories %}
+                                <div class="d-flex align-items-center border-bottom py-2">
+                                    <th scope="row">{{ forloop.counter }}</th>
+                                    <div class="w-100 ms-3">
+                                        <div class="d-flex w-100 align-items-center justify-content-between">
+                                            <span>{{ category.name }}</span>
+                                            <div class="d-flex align-items-center">
+                                                <a href="{% url 'edit_category' category.id %}" class="btn btn-warning btn-sm me-2"><i class="fa fa-edit"></i></a>
+                                                <form method="post" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="delete" value="{{ category.id }}">
+                                                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                    <div class="d-flex align-items-center border-bottom py-2">
+                                        <div class="w-100 ms-3">
+                                            <div class="d-flex w-100 align-items-center justify-content-between">
+                                                <span>No categories found</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Widgets End -->
+            <div class="container-fluid pt-4 px-4">
+                <!-- Existing code for the chart -->
+            
+                <div class="bg-secondary text-center rounded p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="mb-0">Jobs</h6>
+                        <a href="{% url 'customer_list' %}">Show All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table text-start align-middle table-bordered table-hover mb-0">
+                            <thead>
+                                <tr class="text-white">
+                                    <th scope="col">#</th>
+                                    <th scope="col">Customer Name</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Phone</th>
+                                    <th scope="col">Created On</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in last_5_customers %}
+                                <tr>
+                                    <th scope="row">{{ forloop.counter }}</th>
+                                    <td>{{ customer.customer_name }}</td>
+                                    <td>{{ customer.email }}</td>
+                                    <td>{{ customer.contact_number }}</td>
+                                    <td>{{ customer.created_on|date:"d M Y" }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <a href="{% url 'view_customer' customer.id %}" class="btn btn-info btn-sm me-2"><i class="fa fa-eye"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">No Customers found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+{% endblock %}
+   

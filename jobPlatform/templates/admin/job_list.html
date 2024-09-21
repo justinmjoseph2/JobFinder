@@ -1,0 +1,46 @@
+{% extends 'admin/header.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-sm-12 col-md-10 col-lg-8">
+            <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4 text-center">Job Listings</h6>
+                <p class="text-center mb-4">Total Jobs: {{ job_count }}</p>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Company</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Salary</th>
+                            <th scope="col">Vacancies</th>
+                            <th scope="col">Posted On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in jobs %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>{{ job.title }}</td>
+                            <td>{{ job.category.name }}</td>
+                            <td>{{ job.provider.company_name }}</td>
+                            <td>{{ job.location }}</td>
+                            <td>₹ {{ job.salary }}</td>
+                            <td>{{ job.vacancies }}</td>
+                            <td>{{ job.created_on|date:"d M Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">No jobs found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

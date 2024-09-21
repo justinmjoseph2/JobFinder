@@ -1,0 +1,62 @@
+{% extends 'admin/header.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="col-sm-12 col-xl-12">
+        <div class="bg-secondary rounded h-100 p-4">
+            <p>Total Rejected Applications: {{ application_count }}</p>
+            {% if applications %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Job Title</th>
+                        <th scope="col">Applicant</th>
+                        <th scope="col">Applied On</th>
+                        <th scope="col">Resume</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for application in applications %}
+                    <tr>
+                        <th scope="row">{{ forloop.counter }}</th>
+                        <!-- Job Title -->
+                        <td>
+                            <h5>{{ application.job.title }}</h5>
+                            <p>₹ {{ application.job.salary }} LPA</p>
+                        </td>
+
+                        <!-- Applicant Name -->
+                        <td>{{ application.user.customer.customer_name }}</td>
+
+                        <!-- Application Date -->
+                        <td>{{ application.created_at|date:"d M Y" }}</td>
+
+                        <!-- Resume Download -->
+                        <td>
+                            <a href="{{ application.resume.uploaded_file.url }}" target="_blank" class="btn btn-sm btn-info">View Resume</a>
+                        </td>
+
+                        <!-- Status -->
+                        <td>{{ application.status|capfirst }}</td>
+
+                        <!-- Status Dropdown for Update -->
+
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">No Hired applications yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="text-center">
+                <p>No Hired applications yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

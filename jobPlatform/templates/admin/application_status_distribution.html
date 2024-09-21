@@ -1,0 +1,46 @@
+{% extends 'admin/header.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-sm-12 col-xl-6">
+            <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4">Application Status Distribution</h6>
+                <canvas id="pie-chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('pie-chart').getContext('2d');
+    const statusNames = {{ status_names|safe }};
+    const statusCounts = {{ status_counts|safe }};
+
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: statusNames,
+            datasets: [{
+                label: 'Application Status',
+                data: statusCounts,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(75, 192, 192, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+</script>
+{% endblock %}

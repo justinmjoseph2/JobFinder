@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<main>
+
+    <!-- Breadcrumb Area Start -->
+    <!-- Breadcrumb area content goes here if needed -->
+    <!-- Breadcrumb Area End -->
+
+    <!-- Login Area Start -->
+    <section class="login-area pt-5 pb-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 col-md-10">
+                    <div class="card shadow-lg border-0 rounded">
+                        <div class="card-body p-4">
+                            <h3 class="text-center mb-4">Login</h3>
+
+                            <!-- Display error messages -->
+                            {% if messages %}
+                                <div class="alert alert-danger mb-4">
+                                    {% for message in messages %}
+                                        <p>{{ message }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            <!-- Your Django form starts here -->
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Username or Email Address</label>
+                                    <input type="email" id="email" name="email" class="form-control" placeholder="Enter Username or Email address..." required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter password..." required>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="form-check">
+                                        <input id="remember" type="checkbox" name="remember" class="form-check-input" {% if request.POST.remember %} checked {% endif %}>
+                                        <label for="remember" class="form-check-label">Remember me!</label>
+                                    </div>
+                                    <a href="{% url 'forgot_password' %}" class="text-dark">Lost your password?</a>
+                                </div>
+                                <button class="btn btn-primary w-100" type="submit">Login Now</button>
+                            </form>
+                            <!-- Your Django form ends here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Login Area End -->
+
+</main>
+{% endblock %}

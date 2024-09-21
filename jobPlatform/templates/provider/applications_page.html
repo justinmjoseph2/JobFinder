@@ -1,0 +1,97 @@
+{% extends 'base2.html' %}
+{% block content %}
+<style>
+    .application-box {
+        background-color: #f7f7f7;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease-in-out;
+        text-align: center;
+        height: 100%;
+    }
+
+    .application-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .application-box h4 {
+        margin-bottom: 15px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .application-box p {
+        color: #777;
+        font-size: 14px;
+    }
+
+    .application-box-icon {
+        font-size: 50px;
+        color: #5b5b5b;
+        margin-bottom: 15px;
+    }
+</style>
+
+<div class="our-services section-pad-t20">
+    <div class="container">
+        <!-- Section Title -->
+        <div class="row mb-4">
+            <div class="col-lg-12 text-center">
+                <h2>Application Status</h2>
+            </div>
+        </div>
+
+        <!-- Application Boxes -->
+        <!-- Application Boxes -->
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <div class="application-box">
+                    <div class="application-box-icon icon-blue">
+                        <i class="fas fa-hourglass-start"></i>
+                    </div>
+                    <h4>New Applications</h4>
+                    <p>{{ applications.new.count }} applications</p>
+                    <a href="{% url 'new_applications' %}" style="color: rgb(164, 161, 161);">View Details</a>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-4">
+                <div class="application-box">
+                    <div class="application-box-icon icon-green">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h4>Shortlisted</h4>
+                    <p>{{ applications.shortlisted.count }} applications</p>
+                    <a href="{% url 'shortlisted_applications' %}" style="color: rgb(164, 161, 161);">View Details</a>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-4">
+                <div class="application-box">
+                    <div class="application-box-icon icon-orange">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h4>Hired</h4>
+                    <p>{{ applications.hired.count }} applications</p>
+                    <a href="{% url 'hired_applications' %}" style="color: rgb(164, 161, 161);">View Details</a>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-4">
+                <div class="application-box">
+                    <div class="application-box-icon icon-red">
+                        <i class="fas fa-user-times"></i>
+                    </div>
+                    <h4>Rejected</h4>
+                    <p>{{ applications.rejected.count }} applications</p>
+                    <a href="{% url 'rejected_applications' %}" style="color: rgb(164, 161, 161);">View Details</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

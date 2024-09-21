@@ -1,0 +1,77 @@
+{% extends 'base2.html' %}
+
+{% block content %}
+<style>
+    .row {
+    display: flex;
+    align-items: center;
+    }
+
+    .col-md-3 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .col-md-3.flex-column {
+        flex-direction: column;
+    }
+
+</style>
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Applications for {{ job.title }}</h2>
+
+    {% if applications %}
+        <div class="row">
+            {% for application in applications %}
+                <div class="col-md-12 mb-4">
+                    <div class="row border p-3 rounded bg-light align-items-center">
+                        <!-- Job Title -->
+                        <div class="col-md-3 d-flex align-items-center justify-content-center">
+                            <h5>{{ application.job.title }}</h5><br>
+                            <p>₹ {{ application.job.salary }} LPA</p>
+                        </div>
+                        
+                        <!-- Applicant Name and Application Date -->
+                        <div class="col-md-3 d-flex flex-column align-items-center">
+
+                            <p><strong>Applicant:</strong> {{ application.user.customer.customer_name }}</p>
+                            <p><strong>Applied On:</strong> {{ application.created_at|date:"d M Y" }}</p>
+                        </div>
+                        
+                        <!-- Resume Download Button -->
+                        <div class="col-md-3 d-flex align-items-center justify-content-center">
+                            <a href="{{ application.resume.uploaded_file.url }}" target="_blank" class="btn btn-sm btn-info">View Resume</a>
+                        </div>
+                        
+                        <!-- Status Dropdown -->
+                        <div class="col-md-3 d-flex flex-column align-items-center">
+                            <form action="{% url 'update_application_status' application.id %}" method="post">
+                                {% csrf_token %}
+                                <select name="status" class="form-control form-control-sm">
+                                    <option value="pending" {% if application.status == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="short-list" {% if application.status == 'short-list' %}selected{% endif %}>Short-List</option>
+                                    <option value="hire" {% if application.status == 'hire' %}selected{% endif %}>Hire</option>
+                                    <option value="reject" {% if application.status == 'reject' %}selected{% endif %}>Reject</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-success mt-2">Update Status</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-md-12">
+                    <div class="text-center">
+                        <p>No applications for this job yet.</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center">
+            <p>No applications for this job yet.</p>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock content %}

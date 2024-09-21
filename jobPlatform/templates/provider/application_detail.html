@@ -1,0 +1,20 @@
+{% extends 'base2.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">Application Details</h2>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="application-detail-box">
+                <h4>Job Title: {{ application.job.title }}</h4>
+                <p>Applicant: {{ application.applicant.name }}</p>
+                <p>Status: {{ application.status }}</p>
+                <p>Application Date: {{ application.date_applied }}</p>
+                <p>Resume: <a href="{{ application.resume.url }}">View Resume</a></p>
+                <p>Cover Letter: {{ application.cover_letter }}</p>
+                <!-- Add more details as needed -->
+                <a href="{% url 'new_applications' %}" class="btn btn-primary">Back to Applications</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base2.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    #navigation a {
+        color: inherit; /* Original color */
+        transition: color 0.3s ease; /* Smooth transition for color change */
+    }
+
+    #navigation a:hover {
+        color: black; /* Color on mouse over */
+    }
+</style>
+
+<body style="background: url('{% static 'assets/img/elements/back.png' %}') no-repeat center center; background-size: cover;">
+    <div class="container" style="padding-bottom: 10%;" >
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card mt-5">
+                <div class="card-body">
+                    <h2 class="card-title">Add Job</h2>
+                    <form method="post" class="mt-3" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            {{ form.title.label_tag }} {{ form.title }}
+                        </div>
+                        <!-- Grouped dropdown fields -->
+                        <div class="form-group row">
+                            <div class="form-group col-md-4">
+                                {{ form.job_type.label_tag }} {{ form.job_type }}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                {{ form.category.label_tag }} {{ form.category }}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                {{ form.experience.label_tag }} {{ form.experience }}
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+
+                            <div class="form-group col-md-4">
+                                {{ form.salary.label_tag }} {{ form.salary }}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                {{ form.vacancies.label_tag }} {{ form.vacancies }}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                            {{ form.till_date.label_tag }} {{ form.till_date }}
+                            </div>
+
+                        </div>
+                        <!-- Other fields -->
+
+                        <div class="form-group">
+                            {{ form.description.label_tag }} {{ form.description }}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.link.label_tag }} {{ form.link }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.location.label_tag }} {{ form.location }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.skills.label_tag }} {{ form.skills }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save Job</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Success</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Job has been added successfully!
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if success %}
+<script>
+    // Show success modal when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        var myModal = new bootstrap.Modal(document.getElementById('successModal'), {});
+        myModal.show();
+    });
+</script>
+</body>
+{% endif %}
+{% endblock %}

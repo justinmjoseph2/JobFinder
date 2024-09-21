@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load static %}
+
+<style>
+    .job-card {
+        margin-bottom: 30px;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        padding: 20px;
+        margin: 3% 5%;
+        background-color: #fff;
+    }
+    .card-img {
+        max-width: 50%;
+        height: auto;
+    }
+    .card-title {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+    .card-text {
+        font-size: 14px;
+        color: #666;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #fff;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+    .d-flex {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .card-body {
+        text-align: center;
+    }
+    .no-gutters {
+        margin-right: 0;
+        margin-left: 0;
+    }
+    .col-md-3 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<h1 style="text-align: center; color: #333; font-size: 32px; margin-bottom: 30px;">Job Details</h1>
+
+<div class="resume-container">
+
+    {% if jobs %}
+        {% for job in jobs %}
+            <div class="job-card">
+                <div class="row no-gutters">
+                    <div class="col-md-3 d-flex">
+                        <!-- Provider Image -->
+                        <img src="{{ job.provider.company_logo.url }}" class="card-img" alt="Provider Logo">
+                    </div>
+                    <div class="col-md-3 d-flex">
+                        <div class="card-body">
+                            <!-- Job Title, Category, and Provider Name -->
+                            <h5 class="card-title">{{ job.title }}</h5>
+                            <p class="card-text"><strong>Category:</strong> {{ job.category.name }}</p>
+                            <p class="card-text"><strong>Provider:</strong> {{ job.provider.provider_name }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ job.salary }} LPA</h5>
+                            <p class="card-text"><strong>Experience Required:</strong> {{ job.experience }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex">
+                        <div class="card-body">
+                            {% if job.link %}
+                                <!-- Apply Now Button -->
+                                <a href="{{ job.link }}" target="_blank" class="btn btn-primary">Apply Now</a>
+                            {% else %}
+                                <!-- No Link Available Button -->
+                                <a href="{% url 'handle_no_link' user_id=request.user.id job_id=job.id %}" class="btn btn-primary">Apply Now</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% elif error %}
+        <div class="resume-block">
+            <p style="color: red; text-align: center;">{{ error }}</p>
+        </div>
+    {% endif %}
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="{% url 'analyze_resume' %}" class="resume-back-button">Back to Resume Analysis</a>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+    <style>
+
+        .thank-you-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .thank-you-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .thank-you-message {
+            font-size: 16px;
+        }
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #fb246a;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .back-button:hover {
+            background-color: #fb2439;
+        }
+    </style>
+    <div class="thank-you-container" style="margin-top: 5%; margin-bottom: 5%;">
+        <h1 class="thank-you-title">Thank You!</h1>
+        <p class="thank-you-message">Your application has been received. We will get back to you soon.</p>
+        <a href="{% url 'index' %}" class="back-button">Back to Home</a>
+    </div>
+{% endblock %}
+

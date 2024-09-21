@@ -1,0 +1,72 @@
+{% extends 'admin/header.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-sm-12 col-xl-6">
+            <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4">Filter Jobs by Created Date</h6>
+                <form method="GET" class="mb-4">
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_date" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </form>
+
+                {% if jobs %}
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col">Provider</th>
+                                    <th scope="col">Category</th>
+                                    <th scope="col">Created On</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in jobs %}
+                                    <tr>
+                                        <th scope="row">{{ forloop.counter }}</th>
+                                        <td>{{ job.title }}</td>
+                                        <td>{{ job.provider.provider_name }}</td>
+                                        <td>{{ job.category.name }}</td>
+                                        <td>{{ job.created_on }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">No jobs found for the selected date range.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <button onclick="printTable();" class="btn btn-secondary mt-3">Print Results</button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for printing the table -->
+<script>
+    function printTable() {
+        var printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write('<html><head><title>Print Table</title>');
+        printWindow.document.write('<style>table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #ddd; padding: 8px; } th { background-color: #f4f4f4; } </style>');
+        printWindow.document.write('</head><body >');
+        printWindow.document.write(document.querySelector('.table-container').innerHTML);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+    }
+</script>
+
+{% endblock %}

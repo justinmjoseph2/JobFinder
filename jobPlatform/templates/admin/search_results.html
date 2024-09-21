@@ -1,0 +1,171 @@
+{% extends 'admin/header.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-sm-12 col-xl-6">
+            <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4">Search Results</h6>
+                
+                <form class="d-none d-md-flex ms-4" method="GET" action="{% url 'search_results_admin' %}">
+                    <input class="form-control bg-dark border-0" type="search" placeholder="Search" name="search" value="{{ query }}">
+                </form>
+                
+                <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true">
+                            Providers ({{ provider_count }})
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">
+                            Customers ({{ customer_count }})
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">
+                            Jobs ({{ job_count }})
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-category-tab" data-bs-toggle="pill" data-bs-target="#pills-category" type="button" role="tab" aria-controls="pills-category" aria-selected="false">
+                            Categories ({{ category_count }})
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="pills-tabContent">
+                    <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">logo</th>
+                                    <th scope="col">Provider Name</th>
+                                    <th scope="col">Company Name</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for provider in providers %}
+                                    <tr>
+                                        <td><img src="{{ provider.company_logo.url }}" alt="Logo" style="width: 50px; height: auto;"></td>
+                                        <th scope="row">{{ forloop.counter }}</th>
+                                        <td>{{ provider.provider_name }}</td>
+                                        <td>{{ provider.company_name }}</td>
+                                        <td>{{ provider.email }}</td>
+                                        <td><div class="d-flex align-items-center">
+                                            <a href="{% url 'view_provider' provider.id %}" class="btn btn-info btn-sm me-2"><i class="fa fa-eye"></i></a>
+                                        </div></td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">No matching providers found.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Customer Name</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Contact Number</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in customers %}
+                                    <tr>
+                                        <th scope="row">{{ forloop.counter }}</th>
+                                        <td>{{ customer.customer_name }}</td>
+                                        <td>{{ customer.email }}</td>
+                                        <td>{{ customer.contact_number }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <a href="{% url 'view_customer' customer.id %}" class="btn btn-info btn-sm me-2"><i class="fa fa-eye"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">No matching customers found.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Job Title</th>
+                                    <th scope="col">Category</th>
+                                    <th scope="col">Location</th>
+                                    <th scope="col">Salary</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in jobs %}
+                                    <tr>
+                                        <th scope="row">{{ forloop.counter }}</th>
+                                        <td>{{ job.title }}</td>
+                                        <td>{{ job.category.name }}</td>
+                                        <td>{{ job.location }}</td>
+                                        <td>{{ job.salary }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">No matching jobs found.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="pills-category" role="tabpanel" aria-labelledby="pills-category-tab">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Category Name</th>
+                                    <th scope="col">Created On</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category in categories %}
+                                    <tr>
+                                        <th scope="row">{{ forloop.counter }}</th>
+                                        <td>{{ category.name }}</td>
+                                        <td>{{ category.created_on }}</td>
+                                        <td>
+                                            <a href="{% url 'edit_category' category.id %}" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></a>
+                                            <form method="post" style="display: inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="delete" value="{{ category.id }}">
+                                                <button type="submit" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center">No matching categories found.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

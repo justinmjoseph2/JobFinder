@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load static %}
+
+<style>
+    .job-box {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 8px;
+    background: #fff;
+    margin-bottom: 20px;
+}
+
+.company-img img {
+    width: 100%;
+    height: auto;
+}
+
+.job-details h4, .job-details p {
+    margin: 10px 0;
+}
+
+.description-container {
+    display: flex;
+    justify-content: center; /* Centers the content horizontally */
+    width: 100%; /* Ensure it takes full width of the parent container */
+}
+
+.description-content {
+    width: 90%; /* Set the width to 90% */
+    margin-top: 20px;
+    padding: 15px; /* Optional: Padding to give it some space */
+    text-align: justify;
+}
+.img-fluid{
+    width: 10%;
+    height: 10%;
+}
+
+</style>
+<div class="job-detail-area pt-120 pb-120">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="job-box">
+                    <div class="row">
+                        <!-- Image Column -->
+                        <div class="col-md-2">
+                            <div class="company-img">
+                                <img src="{{ job.provider.company_logo.url }}" alt="Company Logo" class="img-fluid">
+                            </div>
+                        </div>
+                        <!-- Job Details Column -->
+                        <div class="col-md-4">
+                            <div class="job-details">
+                                <h4>{{ job.title }}</h4>
+                                <h6>{{ job.provider.company_name }}</h6>
+                                <p><i class="fas fa-map-marker-alt"></i> {{ job.location }}</p>
+                                <p>Experience: {{ job.experience }}</p>
+                                <p>Posted on: {{ job.created_on|date:"d M Y" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="job-details">
+                                <p>Salary: ${{ job.salary }} LPA</p>
+                                <p>Job Type: {{ job.job_type }}</p>
+                                <p>Category: {{ job.category.name }}</p>
+                                <p>Apply before {{ job.till_date }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-12 description-container">
+                            <div class="description-content">
+                                <p>Description: {{ job.description }}</p>
+                                <p>Skills Required: {{ job.skills }}</p>
+                            </div>
+                        </div>
+                        {% if job.link %}
+                            <!-- Apply Now Button -->
+                            <div class="apply-button mt-4" style="width: 100%; text-align: center;">
+                                <a href="{{ job.link }}" class="btn btn-primary">Apply Now</a>
+                            </div>                            
+                        {% else %}
+                            <!-- No Link Available Button -->
+                            <div class="apply-button mt-4" style="width: 100%; text-align: center;">
+                                <a href="{% url 'handle_no_link' user_id=request.user.id job_id=job.id %}" class="btn btn-primary">Apply Now</a>
+                            </div>
+                        {% endif %}
+                    
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

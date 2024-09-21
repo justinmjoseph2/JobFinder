@@ -1,0 +1,44 @@
+{% extends 'admin/header.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-sm-12 col-md-10 col-lg-8">
+            <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4 text-center">Expired Jobs</h6>
+                <p class="text-center mb-4">Total Expired Jobs: {{ expired_job_count }}</p>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Salary</th>
+                            <th scope="col">Vacancies</th>
+                            <th scope="col">Till Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in expired_jobs %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>{{ job.title }}</td>
+                            <td>{{ job.category.name }}</td>
+                            <td>{{ job.location }}</td>
+                            <td>₹ {{ job.salary }}</td>
+                            <td>{{ job.vacancies }}</td>
+                            <td>{{ job.till_date|date:"d M Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">No expired jobs found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

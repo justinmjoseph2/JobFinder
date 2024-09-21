@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .job-box {
+        width: 95%;
+        margin: 0 auto;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+        padding: 20px;
+        border-radius: 8px;
+        background: #fff;
+        margin-bottom: 20px;
+    }
+
+    .job-box:hover {
+        transform: scale(1.02);
+    }
+
+    .company-img img {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+    }
+
+    .job-details h5 {
+        margin: 0;
+        font-size: 1.2em;
+    }
+
+    .job-details p {
+        margin: 5px 0;
+    }
+
+    .apply-button {
+        margin-top: 10px;
+    }
+</style>
+
+<div class="job-listing-area pt-120 pb-120">
+    <div class="container">
+        <!-- Filter Form -->
+        <form method="GET" class="filter-form mb-5">
+            <div class="row">
+                <!-- Category Filter -->
+                <div class="col-md-2">
+                    <select name="category" class="form-control">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- Job Type Filter -->
+                <div class="col-md-2">
+                    <select name="job_type" class="form-control">
+                        <option value="">All Job Types</option>
+                        <option value="full-time" {% if request.GET.job_type == "full-time" %}selected{% endif %}>Full-time</option>
+                        <option value="part-time" {% if request.GET.job_type == "part-time" %}selected{% endif %}>Part-time</option>
+                        <option value="intern" {% if request.GET.job_type == "intern" %}selected{% endif %}>Internships</option>
+                    </select>
+                </div>
+                <!-- Location Filter -->
+                <div class="col-md-2">
+                    <select name="location" class="form-control">
+                        <option value="">All Locations</option>
+                        {% for location in locations %}
+                            <option value="{{ location }}" {% if request.GET.location == location %}selected{% endif %}>{{ location }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- Provider Filter -->
+                <div class="col-md-2">
+                    <select name="provider" class="form-control">
+                        <option value="">All Providers</option>
+                        {% for provider in providers %}
+                            <option value="{{ provider.id }}" {% if request.GET.provider == provider.id|stringformat:"s" %}selected{% endif %}>{{ provider.provider_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- Experience Filter -->
+                <div class="col-md-2">
+                    <select name="experience" class="form-control">
+                        <option value="">All Experience Levels</option>
+                        <option value="fresher" {% if request.GET.experience == "fresher" %}selected{% endif %}>Fresher</option>
+                        {% for year in experience_years %}
+                            <option value="{{ year }}" {% if request.GET.experience == year|stringformat:"s" %}selected{% endif %}>{{ year }} years</option>
+                        {% endfor %}
+                        <option value="Above10" {% if request.GET.experience == "Above10" %}selected{% endif %}>More than 10 years</option>
+                    </select>
+                </div>
+                
+                <!-- Filter Button -->
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Job Listings -->
+        <div class="row">
+            {% for job in jobs %}
+            <div class="col-md-12 mb-4">
+                <div class="job-box">
+                    <div class="row">
+                        <!-- Image Column -->
+                        <div class="col-md-3">
+                            <div class="company-img">
+                                <img src="{{ job.provider.company_logo.url }}" alt="Company Logo">
+                            </div>
+                        </div>
+                        <!-- Title and Provider Column -->
+                        <div class="col-md-3">
+                            <div class="job-details">
+                                <h5>{{ job.title }}</h5>
+                                <p>{{ job.provider.company_name }}</p>
+                                <p><i class="fas fa-map-marker-alt"></i> {{ job.location }}</p>
+                            </div>
+                        </div>
+                        <!-- Salary Column -->
+                        <div class="col-md-3">
+                            <div class="job-salary">
+                                <p>Salary: ${{ job.salary }} LPA</p>
+                                <p>Type: {{ job.job_type }}</p>
+                            </div>
+                        </div>
+                        <!-- Apply Button -->
+                        <div class="col-md-3">
+                            <div class="apply-button">
+                                <a href="{% url 'job_detail' job.id %}" class="btn btn-primary">Apply Now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p>No jobs available with the selected filters.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

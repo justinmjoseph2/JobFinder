@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f0f2f5;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+
+    .resume-container {
+        width: 80%;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .resume-block {
+        margin-bottom: 30px;
+        padding: 25px;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .resume-block h2 {
+        margin-top: 0;
+        color: #5a5a5a;
+        font-size: 24px;
+        border-bottom: 2px solid #fb246a;
+        padding-bottom: 10px;
+    }
+
+    .resume-item-box {
+        margin-bottom: 15px;
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .resume-item-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .resume-item-box p {
+        margin: 5px 0;
+        font-size: 16px;
+    }
+
+    .resume-bold-before-colon {
+        font-weight: bold;
+        color: #333;
+    }
+
+    .resume-back-button {
+        display: inline-block;
+        margin-top: 30px;
+        padding: 12px 25px;
+        font-size: 16px;
+        color: #fff;
+        background-color: #fb246a;
+        border: none;
+        border-radius: 25px;
+        text-decoration: none;
+        text-align: center;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .resume-back-button:hover {
+        background-color: #dc3545;
+        transform: scale(1.05);
+    }
+</style>
+
+<div class="resume-container">
+    <h1 style="text-align: center; color: #333; font-size: 32px; margin-bottom: 30px;">Resume Analysis Results</h1>
+
+    <div class="resume-block">
+        <h2>Suitable Jobs</h2>
+        {% if suitable_jobs %}
+            {% for job in suitable_jobs %}
+                {% if job.title or job.description %}
+                    <div class="resume-item-box">
+                        {% if job.title %}
+                            <p class="resume-bold-before-colon">
+                                <a href="{% url 'jobcv' job.title %}" style="text-decoration: none; color: #fb246a;">
+                                    {{ job.title }}
+                                </a>:
+                            </p>
+                        {% endif %}
+                        {% if job.description %}
+                            <p>{{ job.description }}</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p>No suitable jobs found.</p>
+        {% endif %}
+    </div>
+
+    <div class="resume-block">
+        <h2>Improve Your Resume</h2>
+        {% if improve_resume %}
+            {% for resume_point in improve_resume %}
+                {% if resume_point.title or resume_point.description %}
+                    <div class="resume-item-box">
+                        {% if resume_point.title %}
+                            <p class="resume-bold-before-colon">{{ resume_point.title }}:</p>
+                        {% endif %}
+                        {% if resume_point.description %}
+                            <p>{{ resume_point.description }}</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p>No resume improvement suggestions found.</p>
+        {% endif %}
+    </div>
+
+    <div style="text-align: center;">
+        <a href="{% url 'analyze_resume' %}" class="resume-back-button">Upload Another Resume</a>
+    </div>
+</div>
+
+{% endblock %}

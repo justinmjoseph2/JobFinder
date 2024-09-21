@@ -1,0 +1,48 @@
+{% extends 'admin/header.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-sm-12 col-xl-8">
+            <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4 text-center">Customer Registrations in {{ current_year }}</h6>
+                <canvas id="line-chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('line-chart').getContext('2d');
+    const registrationsPerMonth = {{ registrations_per_month|safe }};
+    const months = Object.keys(registrationsPerMonth);
+    const counts = Object.values(registrationsPerMonth);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Registrations',
+                data: counts,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    beginAtZero: true
+                },
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

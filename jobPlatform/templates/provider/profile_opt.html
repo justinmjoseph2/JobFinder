@@ -1,0 +1,72 @@
+{% extends 'base2.html' %}
+{% block content %}
+<style>
+    .application-box {
+        background-color: #f7f7f7;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease-in-out;
+        text-align: center;
+        height: 100%;
+    }
+
+    .application-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .application-box h4 {
+        margin-bottom: 15px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .application-box p {
+        color: #777;
+        font-size: 14px;
+    }
+
+    .application-box-icon {
+        font-size: 50px;
+        color: #5b5b5b;
+        margin-bottom: 15px;
+    }
+</style>
+
+<div class="our-services section-pad-t20">
+    <div class="container">
+        <!-- Section Title -->
+        <div class="row mb-4">
+            <div class="col-lg-12 text-center">
+                <h2>Profile Settings</h2>
+            </div>
+        </div>
+
+        <!-- Application Boxes -->
+        <!-- Application Boxes -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="application-box">
+                    <div class="application-box-icon icon-blue">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <h4>Edit Details</h4>
+                    <a href="{% url 'edit_provider' %}" style="color: rgb(164, 161, 161);">View Details</a>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="application-box">
+                    <div class="application-box-icon icon-green">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h4>Change Password</h4>
+                    <a href="{% url 'edit_pass' %}" style="color: rgb(164, 161, 161);">View Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

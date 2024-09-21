@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .form-label {
+    font-weight: bold;
+    margin-bottom: .5rem;
+}
+
+.form-control {
+    border-radius: .25rem;
+    border: 1px solid #ced4da;
+    padding: .375rem .75rem;
+}
+</style>
+    <div class="container d-flex justify-content-center mt-5 mb-5">
+        <div class="card shadow-lg" style="width: 100%; max-width: 400px; border-radius: 10px;">
+            <div class="card-body p-4">
+                <h2 class="text-center mb-4">Admin Login</h2>
+
+                {% if messages %}
+                    <div class="alert alert-danger">
+                        {% for message in messages %}
+                            <p>{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+
+                    <div class="text-center mt-3">
+                        <span>Lost your password? Reset <a href="{% url 'forgot_password_admin' %}" style="color: red;">here</a></span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+{% endblock %}

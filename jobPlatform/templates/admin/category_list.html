@@ -1,0 +1,43 @@
+{% extends 'admin/header.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-sm-12 col-md-8 col-lg-6">
+            <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4 text-center">Job Categories</h6>
+                <a href="{% url 'add_category' %}" class="btn btn-primary mb-4">Add New Category</a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Category Name</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category in categories %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>{{ category.name }}</td>
+                            <td>
+                                <a href="{% url 'edit_category' category.id %}" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></a>
+                                <form method="post" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="delete" value="{{ category.id }}">
+                                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">No categories found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

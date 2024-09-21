@@ -1,0 +1,48 @@
+{% extends 'admin/header.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-sm-12 col-xl-8">
+            <div class="bg-secondary rounded h-100 p-4">
+                <p>Total Providers: <strong>{{ provider_count }}</strong></p>
+
+                <h6 class="mb-4">All Providers</h6>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width: 10%;">#</th>
+                            <th scope="col" style="width: 10%;">Logo</th>
+                            <th scope="col" style="width: 20%;">Company</th>
+                            <th scope="col" style="width: 20%;">name</th>
+                            <th scope="col" style="width: 10%;">email</th>
+                            <th scope="col" style="width: 20%;">Action</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for provider in providers %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td><img src="{{ provider.company_logo.url }}" alt="Logo" style="width: 50px; height: auto;"></td>
+                            <td>{{ provider.company_name }}</td>
+                            <td>{{ provider.provider_name }}</td>
+                            <td>{{ provider.email }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <a href="{% url 'view_provider' provider.id %}" class="btn btn-info btn-sm me-2"><i class="fa fa-eye"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">No Providers found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

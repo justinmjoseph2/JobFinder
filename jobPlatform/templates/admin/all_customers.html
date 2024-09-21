@@ -1,0 +1,46 @@
+{% extends 'admin/header.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-sm-12 col-xl-8">
+            <div class="bg-secondary rounded h-100 p-4">
+                <p>Total Customers: <strong>{{ customer_count }}</strong></p>
+
+                <h6 class="mb-4">All customers</h6>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width: 10%;">#</th>
+                            <th scope="col" style="width: 20%;">Name</th>
+                            <th scope="col" style="width: 20%;">Phone</th>
+                            <th scope="col" style="width: 10%;">email</th>
+                            <th scope="col" style="width: 20%;">Action</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <h5><td>{{ customer.customer_name }}</td></h5>
+                            <td>{{ customer.contact_number }}</td>
+                            <td>{{ customer.email }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <a href="{% url 'view_customer' customer.id %}" class="btn btn-info btn-sm me-2"><i class="fa fa-eye"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">No customers found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

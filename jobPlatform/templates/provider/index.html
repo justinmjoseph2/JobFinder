@@ -1,0 +1,152 @@
+{% extends 'base2.html' %}
+{% block content %}
+{% load static %}
+<style>
+    img {
+        height: 25%;
+        width: 25%;
+        border-radius: 10px;
+    }
+
+    .company-logo {
+        border-radius: 50%;
+        height: 80px;
+        width: 80px;
+    }
+
+    .section-tittle {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .section-tittle img {
+        margin-right: 15px;
+    }
+
+    .section-tittle h5 {
+        margin: 0;
+    }
+
+    .section-tittle span {
+        display: block;
+        margin-top: 5px;
+    }
+
+    .info-box {
+        background-color: #f7f7f7;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease-in-out;
+        text-align: center;
+        height: 100%;
+    }
+
+    .info-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .info-box h4 {
+        margin-bottom: 15px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .info-box p {
+        color: #777;
+        font-size: 14px;
+    }
+
+    .info-box-icon {
+        font-size: 50px;
+        color: #5b5b5b;
+        margin-bottom: 15px;
+    }
+
+    .icon-blue {
+        color: #007bff;
+    }
+
+    .icon-green {
+        color: #28a745;
+    }
+
+    .icon-orange {
+        color: #fd7e14;
+    }
+
+    .icon-red {
+        color: #dc3545;
+    }
+
+    .icon-purple {
+        color: #6f42c1;
+    }
+
+    .icon-yellow {
+        color: #ffc107;
+    }
+
+</style>
+
+<div class="our-services section-pad-t20">
+    <div class="container">
+        <!-- Section Tittle -->
+        <div class="row d-flex justify-content-center">
+            <div class="col-xl-12 col-lg-6 col-md-6 col-sm-6">
+                <div class="single-services text-center mb-30">
+                    <div class="col-lg-12">
+                        <div class="section-tittle d-flex align-items-center justify-content-start">
+                            <!-- Logo -->
+                            <div class="mr-3">
+                                <img src="{{ provider.company_logo.url }}" style="border-color: #333;" alt="Company Logo" class="company-logo" />
+                            </div>
+                            <!-- Text -->
+                            <div class="text-left">
+                                <h5 class="m-0">Welcome, {{ provider.provider_name }}<h6 style="color: gray;">{{ provider.company_name }}</h6></h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6 Boxes -->
+        <div class="row mt-4">
+            <div class="col-md-4 mb-4">
+                <div class="info-box">
+                    <div class="info-box-icon icon-blue">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <a href="{% url 'manage_jobs' %}"><h4>Jobs</h4></a>
+                    <a href="{% url 'manage_jobs' %}"><p>Manage posted jobs.</p></a>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="info-box">
+                    <div class="info-box-icon icon-green">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <a href="{% url 'applications_page' %}"><h4>Applicants</h4></a>
+                    <a href="{% url 'applications_page' %}"><p>View and filter applicants by status.</p></a>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="info-box">
+                    <div class="info-box-icon icon-yellow">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <a href="{% url 'profile_opt' %}"><h4>Settings</h4></a>
+                    <a href="{% url 'profile_opt' %}"><p>Configure your account and preferences.</p></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
