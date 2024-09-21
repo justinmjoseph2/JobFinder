@@ -618,6 +618,25 @@ def upload_to_gemini(file_url, mime_type='application/pdf'):
 
     return gemini_file
 
+from django.shortcuts import render
+from django.core.files.storage import FileSystemStorage
+from .forms import YourForm  # Replace with your actual form
+
+def upload_file(request):
+    if request.method == 'POST' and request.FILES['file']:
+        uploaded_file = request.FILES['file']
+        fs = FileSystemStorage()
+        filename = fs.save(uploaded_file.name, uploaded_file)  # Save the file
+        file_url = fs.url(filename)
+
+        # Now you can process the file as needed
+        # For example, read the file content, parse it, etc.
+
+        return render(request, 'upload.html', {
+            'file_url': file_url  # Pass the file URL to the template
+        })
+    return render(request, 'upload.html')
+
 
 def wait_for_files_active(files):
     """Waits for the given files to be active."""
