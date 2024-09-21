@@ -603,11 +603,21 @@ import google.generativeai as genai
 # Configure the Google Gemini API key
 genai.configure(api_key="AIzaSyDHlaH_BLjVfTy-zDD6FAeJGEasRvAh9iU")
 
+import requests
 
-def upload_to_gemini(path, mime_type=None):
-    """Uploads the given file to Gemini."""
-    file = genai.upload_file(path, mime_type=mime_type)
-    return file
+def upload_to_gemini(file_url, mime_type='application/pdf'):
+    # Download the file from Cloudinary
+    response = requests.get(file_url)
+    response.raise_for_status()  # Ensure the download was successful
+
+    # Use the file content for the upload
+    file_content = response.content
+
+    # Here, upload the content to Gemini instead of a file path
+    gemini_file = genai.upload_file(file_content, mime_type=mime_type)
+
+    return gemini_file
+
 
 def wait_for_files_active(files):
     """Waits for the given files to be active."""
