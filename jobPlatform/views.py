@@ -1719,7 +1719,7 @@ from django.shortcuts import render
 from .models import Job
 from django.contrib.auth.decorators import login_required
 
-@login_required
+@login_required_custom
 def job_list(request):
     # Fetch all jobs and order them by the date they were created
     jobs = Job.objects.all().order_by('-created_on')
