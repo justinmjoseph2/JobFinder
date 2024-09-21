@@ -657,75 +657,81 @@ def analyze_resume(request):
     if request.method == 'POST' and request.FILES.get('resume'):
         # Handle file upload
         resume = request.FILES['resume']
+        
+        try:
+            # Upload file to Cloudinary
+            cloudinary_response = cloudinary.uploader.upload(resume, public_id=resume.name)
 
-        # Upload file to Cloudinary
-        cloudinary_response = cloudinary.uploader.upload(resume, public_id=resume.name)
+            # Store the uploaded resume information in the database
+            ResumeUpload.objects.create(
+                user=request.user,
+                fileName=resume.name,
+                uploaded_file=cloudinary_response['secure_url']  # Use Cloudinary's secure URL
+            )
 
-        # Store the uploaded resume information in the database
-        ResumeUpload.objects.create(
-            user=request.user,
-            fileName=resume.name,
-            uploaded_file=cloudinary_response['secure_url']  # Use Cloudinary's secure URL
-        )
+            # Use the secure URL for analysis
+            uploaded_file_url = cloudinary_response['secure_url']
 
-        # Use the secure URL for analysis
-        uploaded_file_url = cloudinary_response['secure_url']
+            # Upload file to Google Gemini using the secure URL
+            gemini_file = upload_to_gemini(uploaded_file_url, mime_type='application/pdf')
 
-        # Upload file to Google Gemini using the secure URL
-        gemini_file = upload_to_gemini(uploaded_file_url, mime_type='application/pdf')
+            # Wait for the file to be ready
+            wait_for_files_active([gemini_file])
 
-        # Wait for the file to be ready
-        wait_for_files_active([gemini_file])
+            # Set up model generation configuration
+            generation_config = {
+                "temperature": 1,
+                "top_p": 0.95,
+                "top_k": 64,
+                "max_output_tokens": 8192,
+                "response_mime_type": "text/plain",
+            }
 
-        # Set up model generation configuration
-        generation_config = {
-            "temperature": 1,
-            "top_p": 0.95,
-            "top_k": 64,
-            "max_output_tokens": 8192,
-            "response_mime_type": "text/plain",
-        }
+            model = genai.GenerativeModel(
+                model_name="gemini-1.5-flash",
+                generation_config=generation_config
+            )
 
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            generation_config=generation_config
-        )
+            # Start chat session with the model
+            chat_session = model.start_chat(
+                history=[{
+                    "role": "user",
+                    "parts": [gemini_file, ""]
+                }]
+            )
 
-        # Start chat session with the model
-        chat_session = model.start_chat(
-            history=[{
-                "role": "user",
-                "parts": [gemini_file, ""]
-            }]
-        )
+            # Send messages to get responses
+            response1 = chat_session.send_message("Analyze the resume for suitable job matches...")
+            response3 = chat_session.send_message("Analyze the resume and suggest points to improve...")
 
-        # Send messages to get responses
-        response1 = chat_session.send_message("Analyze the resume for suitable job matches...")
-        response3 = chat_session.send_message("Analyze the resume and suggest points to improve...")
+            suitable_jobs = response1.text.replace('#', '').replace('*', '')
+            improve_resume = response3.text.replace('#', '').replace('*', '')
 
+            # Preprocess the data for template rendering
+            def process_data(data):
+                result = []
+                for line in data.splitlines():
+                    if ':' in line:
+                        parts = line.split(':', 1)
+                        result.append({'title': parts[0].strip(), 'description': parts[1].strip()})
+                    else:
+                        result.append({'title': '', 'description': line.strip()})
+                return result
 
-        suitable_jobs = response1.text.replace('#', '').replace('*', '')
-        improve_resume = response3.text.replace('#', '').replace('*', '')
+            context = {
+                'suitable_jobs': process_data(suitable_jobs),
+                'improve_resume': process_data(improve_resume)
+            }
 
-        # Preprocess the data for template rendering
-        def process_data(data):
-            result = []
-            for line in data.splitlines():
-                if ':' in line:
-                    parts = line.split(':', 1)
-                    result.append({'title': parts[0].strip(), 'description': parts[1].strip()})
-                else:
-                    result.append({'title': '', 'description': line.strip()})
-            return result
+            return render(request, 'analyze_resume.html', context)
 
-        context = {
-            'suitable_jobs': process_data(suitable_jobs),
-            'improve_resume': process_data(improve_resume)
-        }
-
-        return render(request, 'analyze_resume.html', context)
+        except Exception as e:
+            print(f"Error during processing: {e}")
+            # Handle error response to user
+            return render(request, 'upload_resume.html', {'error': str(e)})
 
     return render(request, 'upload_resume.html')
+
 
 # views.py
 # views.py
