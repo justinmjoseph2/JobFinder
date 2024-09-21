@@ -90,6 +90,7 @@ class ResumeUpload(models.Model):
         return f"Resume of {self.user.username} uploaded on {self.uploaded_at}"
 
 
+
 class JobApplication(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),

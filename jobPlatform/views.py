@@ -639,6 +639,8 @@ def login_required_custom(view_func):
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import ResumeUpload
+import cloudinary
+import cloudinary.uploader
 import os
 
 @login_required_custom
@@ -647,40 +649,21 @@ def analyze_resume(request):
         # Handle file upload
         resume = request.FILES['resume']
 
-        # Check if the user already has an uploaded resume
-        existing_resume = ResumeUpload.objects.filter(user=request.user).first()
-        if existing_resume:
-            # Delete the old file if it exists
-            if existing_resume.uploaded_file:
-                file_path = existing_resume.uploaded_file.path
-                try:
-                    # Check if file exists before attempting to delete
-                    if os.path.exists(file_path):
-                        # Close the file if it's open
-                        existing_resume.uploaded_file.close()  # Close the file properly
-                        # Remove the file
-                        os.remove(file_path)
-                except PermissionError:
-                    # Handle the PermissionError gracefully
-                    print(f"PermissionError: The file {file_path} is being used by another process.")
-                except Exception as e:
-                    # Handle other potential errors
-                    print(f"Error deleting file: {str(e)}")
+        # Upload file to Cloudinary
+        cloudinary_response = cloudinary.uploader.upload(resume, public_id=resume.name)
 
-            # Delete the old record
-            existing_resume.delete()
-
-        # Save the new uploaded resume in the database
-        new_resume = ResumeUpload.objects.create(
+        # Store the uploaded resume information in the database
+        ResumeUpload.objects.create(
             user=request.user,
-            uploaded_file=resume  # Directly use the uploaded file object
+            fileName=resume.name,
+            uploaded_file=cloudinary_response['secure_url']  # Use Cloudinary's secure URL
         )
 
-        # Get the full path of the uploaded file
-        uploaded_file_path = new_resume.uploaded_file.path
+        # Use the secure URL for analysis
+        uploaded_file_url = cloudinary_response['secure_url']
 
-        # Upload file to Google Gemini
-        gemini_file = upload_to_gemini(uploaded_file_path, mime_type='application/pdf')
+        # Upload file to Google Gemini using the secure URL
+        gemini_file = upload_to_gemini(uploaded_file_url, mime_type='application/pdf')
 
         # Wait for the file to be ready
         wait_for_files_active([gemini_file])
@@ -701,20 +684,15 @@ def analyze_resume(request):
 
         # Start chat session with the model
         chat_session = model.start_chat(
-            history=[
-                {
-                    "role": "user",
-                    "parts": [
-                        gemini_file,
-                        "",
-                    ],
-                }
-            ]
+            history=[{
+                "role": "user",
+                "parts": [gemini_file, ""]
+            }]
         )
 
         # Send messages to get responses
-        response1 = chat_session.send_message("Analyze the resume for suitable job matches. when listing, provide details such as job title, average salary a person could get in INR and why it is suitable. dont provide any other data. show job title at the beggining. avoid heading like suitable jobs too. use you/your for pointing to the person and display the best job that suets the user. also include ':' after the heading.")
-        response3 = chat_session.send_message("Analyze the resume and suggest points to improve the quality of the resume and ATS score. dont provide any other data. avoid heading like resume improvements too. use you/your for pointing to the person")
+        response1 = chat_session.send_message("Analyze the resume for suitable job matches...")
+        response3 = chat_session.send_message("Analyze the resume and suggest points to improve...")
 
         suitable_jobs = response1.text.replace('#', '').replace('*', '')
         improve_resume = response3.text.replace('#', '').replace('*', '')
