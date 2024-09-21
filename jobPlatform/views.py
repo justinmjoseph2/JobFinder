@@ -638,54 +638,28 @@ def login_required_custom(view_func):
 # View function to handle resume uploads and analysis
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from .models import ResumeUpload
-import os
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 @login_required_custom
 def analyze_resume(request):
     if request.method == 'POST' and request.FILES.get('resume'):
-        # Handle file upload
+        # Handle file upload directly from request
         resume = request.FILES['resume']
+        
+        # Ensure the uploaded file is an InMemoryUploadedFile
+        if not isinstance(resume, InMemoryUploadedFile):
+            return render(request, 'upload_resume.html', {'error': 'Invalid file format.'})
 
-        # Check if the user already has an uploaded resume
-        existing_resume = ResumeUpload.objects.filter(user=request.user).first()
-        if existing_resume:
-            # Delete the old file if it exists
-            if existing_resume.uploaded_file:
-                file_path = existing_resume.uploaded_file.path
-                try:
-                    # Check if file exists before attempting to delete
-                    if os.path.exists(file_path):
-                        # Close the file if it's open
-                        existing_resume.uploaded_file.close()  # Close the file properly
-                        # Remove the file
-                        os.remove(file_path)
-                except PermissionError:
-                    # Handle the PermissionError gracefully
-                    print(f"PermissionError: The file {file_path} is being used by another process.")
-                except Exception as e:
-                    # Handle other potential errors
-                    print(f"Error deleting file: {str(e)}")
+        # Read the file content into memory without saving it to the server
+        resume_content = resume.read()
 
-            # Delete the old record
-            existing_resume.delete()
+        # Upload the in-memory resume to Google Gemini without saving locally
+        gemini_file = upload_to_gemini(resume_content, mime_type='application/pdf')
 
-        # Save the new uploaded resume in the database
-        new_resume = ResumeUpload.objects.create(
-            user=request.user,
-            uploaded_file=resume  # Directly use the uploaded file object
-        )
-
-        # Get the full path of the uploaded file
-        uploaded_file_path = new_resume.uploaded_file.path
-
-        # Upload file to Google Gemini
-        gemini_file = upload_to_gemini(uploaded_file_path, mime_type='application/pdf')
-
-        # Wait for the file to be ready
+        # Wait for the file to be ready on Google Gemini
         wait_for_files_active([gemini_file])
 
-        # Set up model generation configuration
+        # Set up the model configuration for generating responses
         generation_config = {
             "temperature": 1,
             "top_p": 0.95,
@@ -699,7 +673,7 @@ def analyze_resume(request):
             generation_config=generation_config
         )
 
-        # Start chat session with the model
+        # Start chat session with the model, sending the uploaded resume directly
         chat_session = model.start_chat(
             history=[
                 {
@@ -712,14 +686,15 @@ def analyze_resume(request):
             ]
         )
 
-        # Send messages to get responses
-        response1 = chat_session.send_message("Analyze the resume for suitable job matches. when listing, provide details such as job title, average salary a person could get in INR and why it is suitable. dont provide any other data. show job title at the beggining. avoid heading like suitable jobs too. use you/your for pointing to the person and display the best job that suets the user. also include ':' after the heading.")
-        response3 = chat_session.send_message("Analyze the resume and suggest points to improve the quality of the resume and ATS score. dont provide any other data. avoid heading like resume improvements too. use you/your for pointing to the person")
+        # Send messages to get responses for suitable jobs and resume improvements
+        response1 = chat_session.send_message("Analyze the resume for suitable job matches. When listing, provide details such as job title, average salary a person could get in INR, and why it is suitable. Don't provide any other data. Show job title at the beginning, avoid heading like 'suitable jobs', and use 'you/your' for pointing to the person.")
+        response3 = chat_session.send_message("Analyze the resume and suggest points to improve the quality of the resume and ATS score. Don't provide any other data. Avoid heading like 'resume improvements' and use 'you/your' for pointing to the person.")
 
+        # Clean up the responses by removing unwanted characters
         suitable_jobs = response1.text.replace('#', '').replace('*', '')
         improve_resume = response3.text.replace('#', '').replace('*', '')
 
-        # Preprocess the data for template rendering
+        # Preprocess the data for rendering
         def process_data(data):
             result = []
             for line in data.splitlines():
