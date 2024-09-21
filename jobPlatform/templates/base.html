@@ -53,6 +53,45 @@
                         <div class="col-lg-9 col-md-9">
                             <div class="menu-wrapper">
                                 <!-- Main-menu -->
+                                         
+                                <!-- Header-btn -->
+                                {% if user.is_authenticated %}
+                                <!-- If user is authenticated, display account button and logout button -->
+                                <div class="main-menu">
+                                    <nav class="d-none d-lg-block">
+                                        <ul id="navigation">
+                                            <li><a href="{% url 'index' %}">Home</a></li>
+                                            
+                                            <li><a href="{% url 'analyze_resume' %}">Upload CV</a></li>
+                                            <li><a href="#">Job</a>
+                                                <ul class="submenu">
+                                                    <li><a href="{% url 'job_list' %}">Find a Job </a></li>
+                                                    <li><a href="{% url 'applied_jobs' %}">Applied Jobs</a></li>
+                                                    <!-- <li><a href="{% url 'single_blog' %}">Blog Details</a></li>
+                                                    <li><a href="{% url 'elements' %}">Elements</a></li> -->
+                                                </ul>
+                                            </li>
+                                            <li><a href="#">Get Started</a>
+                                                <ul class="submenu">
+                                                    <li><a href="{% url 'reg1' %}">Register </a></li>
+                                                    <li><a href="{% url 'log1' %}">Login</a></li>
+                                                    <!-- <li><a href="{% url 'single_blog' %}">Blog Details</a></li>
+                                                    <li><a href="{% url 'elements' %}">Elements</a></li> -->
+                                                </ul>
+                                            </li>
+                                            <li><a href="{% url 'contact' %}">Contact</a></li>
+                                        </ul>
+                                    </nav>
+                                </div> 
+                                <li>
+                                    <a style="color: black;" href="{% url 'edit_customer' %}" style="color: black;"><i class="far fa-user"></i></a>
+                                  </li>
+                                <li>
+                                  <a  href="{% url 'logout' %}" style="color: black;"><i class="fas fa-sign-out-alt"></i>
+                                  </a>
+                                </li>
+                                {% else %}
+                                <!-- If user is authenticated, display account button and logout button -->
                                 <div class="main-menu">
                                     <nav class="d-none d-lg-block">
                                         <ul id="navigation">
@@ -70,47 +109,7 @@
                                             <li><a href="{% url 'contact' %}">Contact</a></li>
                                         </ul>
                                     </nav>
-                                </div>          
-                                <!-- Header-btn -->
-                                {% if user.is_authenticated %}
-                                <!-- If user is authenticated, display account button and logout button -->
-                                <li class="d-shop-cart">
-                                  
-                                  <ul class="minicart">
-                                    <li>
-                                        <div class="row">
-                                            <div class="col-xl-12">
-                                                <!-- form -->
-                                                <form method="get" action="{% url 'job_search' %}" class="search-box">
-                                                    <div class="input-form" style="height: auto; width: auto;">
-                                                        <input type="text" name="q" placeholder="Job Title, Category, or Skill">
-                                                    </div>
-                                                    <div class="search-form">
-                                                        <button class="btn head-btn1" style="height: 100%; width: auto;" type="submit">Find job</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </li>
-              
-                                    <li>
-                                    </li>
-                                    <li>
-                                    </li>
-                                  </ul>
-                                </li>
-                                <li>
-                                    <a style="color: black;" href="{% url 'edit_customer' %}" style="color: black;"><i class="far fa-user"></i></a>
-                                  </li>
-                                <li>
-                                  <a  href="{% url 'logout' %}" style="color: black;"><i class="fas fa-sign-out-alt"></i>
-                                  </a>
-                                </li>
-                                {% else %}
-                                <div class="header-btn d-none f-right d-lg-block">
-                                    <a href="{% url 'reg1' %}" class="btn head-btn1">Register</a>
-                                    <a href="{% url 'log1' %}" class="btn head-btn2">Login</a>
-                                </div>
+                                </div> 
                                 {% endif %}
 
                             </div>
