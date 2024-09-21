@@ -892,7 +892,7 @@ from django.shortcuts import render
 from .models import Job, JobCategory, Provider
 from django.utils.timezone import now  # Import current date handling
 
-def job_list(request):
+def job_list_user(request):
     # Fetch all jobs initially, filter out jobs where till_date is less than the current date
     jobs = Job.objects.filter(till_date__gt=now())
 
