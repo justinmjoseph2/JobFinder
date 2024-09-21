@@ -650,6 +650,7 @@ from django.contrib.auth.decorators import login_required
 from .models import ResumeUpload
 import cloudinary
 import cloudinary.uploader
+import fitz  # PyMuPDF
 import os
 
 @login_required
@@ -657,8 +658,11 @@ def analyze_resume(request):
     if request.method == 'POST' and request.FILES.get('resume'):
         # Handle file upload
         resume = request.FILES['resume']
-        
+
         try:
+            # Extract text from the uploaded resume
+            text = extract_text_from_resume(resume)
+
             # Upload file to Cloudinary
             cloudinary_response = cloudinary.uploader.upload(resume, public_id=resume.name)
 
@@ -669,11 +673,11 @@ def analyze_resume(request):
                 uploaded_file=cloudinary_response['secure_url']  # Use Cloudinary's secure URL
             )
 
-            # Use the secure URL for analysis
-            uploaded_file_url = cloudinary_response['secure_url']
+            # Use the extracted text for analysis
+            uploaded_text = text
 
-            # Upload file to Google Gemini using the secure URL
-            gemini_file = upload_to_gemini(uploaded_file_url, mime_type='application/pdf')
+            # Upload text to Google Gemini
+            gemini_file = upload_to_gemini(uploaded_text, mime_type='text/plain')
 
             # Wait for the file to be ready
             wait_for_files_active([gemini_file])
@@ -696,7 +700,7 @@ def analyze_resume(request):
             chat_session = model.start_chat(
                 history=[{
                     "role": "user",
-                    "parts": [gemini_file, ""]
+                    "parts": [uploaded_text, ""]  # Pass the extracted text
                 }]
             )
 
@@ -731,6 +735,22 @@ def analyze_resume(request):
             return render(request, 'upload_resume.html', {'error': str(e)})
 
     return render(request, 'upload_resume.html')
+
+def extract_text_from_resume(file):
+    text = ""
+    if file.name.endswith('.pdf'):
+        # For PDF files
+        with fitz.open(file) as pdf_document:
+            for page in pdf_document:
+                text += page.get_text()
+    elif file.name.endswith('.docx'):
+        # Handle DOCX files here if needed
+        from docx import Document
+        doc = Document(file)
+        for paragraph in doc.paragraphs:
+            text += paragraph.text + '\n'
+    return text.strip()
+
 
 
 # views.py
