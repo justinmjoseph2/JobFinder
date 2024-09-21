@@ -1003,7 +1003,7 @@ def contact_success(request):
 from django.shortcuts import render
 from .models import Job
 from django.db.models import Q
-@login_required
+
 def search_jobs(request):
     query = request.GET.get('q', '')
     jobs = Job.objects.all()
