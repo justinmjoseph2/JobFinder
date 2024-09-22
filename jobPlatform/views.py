@@ -32,7 +32,7 @@ import pydotplus
 from graphviz import Digraph
 import pathlib
 import textwrap
-from .forms import ContactForm, CustomPasswordChangeForm, ProviderForm
+from .forms import ContactForm, CustomPasswordChangeForm
 
 
 import google.generativeai as genai
@@ -175,7 +175,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from .models import Provider
-import cloudinary.uploader  # Import Cloudinary uploader
 
 User = get_user_model()
 
@@ -190,10 +189,10 @@ def register_provider(request):
 
         # Check if passwords match
         if password != confirm_password:
-            messages.error(request, 'Passwords do not match!')
+            messages.error(request, 'Passwords Do Not Match!')
             return render(request, 'customer/register_provider.html')
 
-        # Validate password strength
+        # Check password strength using Django's built-in validators
         try:
             validate_password(password)
         except ValidationError as e:
@@ -208,41 +207,24 @@ def register_provider(request):
         # Create user
         try:
             user = User.objects.create_user(username=email, email=email, password=password)
-        except Exception as e:
-            messages.error(request, 'Failed to create user: ' + str(e))
+        except:
+            messages.error(request, 'Failed to create user.')
             return render(request, 'customer/register_provider.html')
 
-        # Upload company logo to Cloudinary
-        logo_url = None
-        if company_logo:
-            try:
-                upload_result = cloudinary.uploader.upload(company_logo, folder="Company/")
-                logo_url = upload_result['url']  # Get the URL of the uploaded image
-            except Exception as e:
-                messages.error(request, f"Error uploading logo: {str(e)}")
-                return render(request, 'customer/register_provider.html')
-
-        # Create provider with Cloudinary URL
-        Provider.objects.create(
-            user=user,
-            provider_name=provider_name,
-            company_name=company_name,
-            email=email,
-            company_logo=logo_url
-        )
+        # Create provider
+        provider = Provider.objects.create(user=user, provider_name=provider_name, company_name=company_name, email=email, company_logo=company_logo)
 
         # Authenticate and login user
         user = authenticate(request, username=email, password=password)
-        if user:
+        if user is not None:
             login(request, user)
-            messages.success(request, 'Your account has been registered successfully!')
+            messages.success(request, 'Your Account Has Been Registered Successfully!')
             return redirect('provider_index')
         else:
             messages.error(request, 'Failed to login user.')
             return render(request, 'customer/register_provider.html')
 
     return render(request, 'customer/register_provider.html')
-
 
 
 
@@ -494,6 +476,33 @@ from .models import Provider
 
 
 
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from .models import Provider
+from .forms import ProviderForm
+
+@login_required
+def edit_provider(request):
+    current_user = request.user
+    try:
+        provider = Provider.objects.get(user=current_user)
+    except Provider.DoesNotExist:
+        return HttpResponse("You are not associated with any provider profile.")
+
+    if request.method == 'POST':
+        form = ProviderForm(request.POST, request.FILES, instance=provider)
+        if form.is_valid():
+            form.save()
+            current_user.email = form.cleaned_data['email']
+            current_user.username = form.cleaned_data['email']
+            current_user.save()
+            return redirect('provider/index')
+    else:
+        form = ProviderForm(instance=provider)
+
+    return render(request, 'provider/details.html', {'form': form})
+
 
 from django.shortcuts import render, redirect
 from .forms import JobForm
@@ -603,21 +612,11 @@ import google.generativeai as genai
 # Configure the Google Gemini API key
 genai.configure(api_key="AIzaSyDHlaH_BLjVfTy-zDD6FAeJGEasRvAh9iU")
 
-import requests
 
-def upload_to_gemini(file_url, mime_type='application/pdf'):
-    # Download the file from Cloudinary
-    response = requests.get(file_url)
-    response.raise_for_status()  # Ensure the download was successful
-
-    # Use the file content for the upload
-    file_content = response.content
-
-    # Here, upload the content to Gemini instead of a file path
-    gemini_file = genai.upload_file(file_content, mime_type=mime_type)
-
-    return gemini_file
-
+def upload_to_gemini(path, mime_type=None):
+    """Uploads the given file to Gemini."""
+    file = genai.upload_file(path, mime_type=mime_type)
+    return file
 
 def wait_for_files_active(files):
     """Waits for the given files to be active."""
@@ -645,139 +644,6 @@ def login_required_custom(view_func):
 
 
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from .models import ResumeUpload
-import cloudinary
-import cloudinary.uploader
-import fitz  # PyMuPDF
-import os
-import genai
-
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from django.core.files.base import ContentFile  # Import ContentFile for file handling
-import cloudinary.uploader
-from .models import ResumeUpload  # Ensure your model import is correct
-from .utils import extract_text_from_resume, process_data, upload_to_gemini, wait_for_files_active  # Adjust imports as needed
-import genai
-
-@login_required
-def analyze_resume(request):
-    if request.method == 'POST' and request.FILES.get('resume'):
-        resume = request.FILES['resume']
-        try:
-            # Extract text from the uploaded resume
-            text = extract_text_from_resume(resume)
-            print(f"Extracted text: {text[:100]}")  # Debug: Show first 100 characters of extracted text
-
-            # Convert the uploaded file to ContentFile for Cloudinary
-            file_content = ContentFile(resume.read())  # Read and convert the file content
-
-            try:
-                # Upload the file content to Cloudinary
-                cloudinary_response = cloudinary.uploader.upload(file_content, public_id=resume.name)
-                print(f"Cloudinary response: {cloudinary_response}")  # Debug: Show Cloudinary response
-
-            except Exception as e:
-                print(f"Cloudinary upload error: {e}")
-                return render(request, 'upload_resume.html', {'error': 'Error uploading file to Cloudinary.'})
-
-            # Store the uploaded resume information in the database
-            try:
-                ResumeUpload.objects.create(
-                    user=request.user,
-                    fileName=resume.name,
-                    uploaded_file=cloudinary_response.get('secure_url', '')
-                )
-            except Exception as e:
-                print(f"Database save error: {e}")
-                return render(request, 'upload_resume.html', {'error': 'Error saving file information to the database.'})
-
-            uploaded_text = text
-
-            # Upload text to Google Gemini and handle response
-            try:
-                gemini_file = upload_to_gemini(uploaded_text, mime_type='text/plain')
-                wait_for_files_active([gemini_file])
-
-                # Initialize and configure the Generative Model
-                model = genai.GenerativeModel(
-                    model_name="gemini-1.5-flash",
-                    generation_config={
-                        "temperature": 1,
-                        "top_p": 0.95,
-                        "top_k": 64,
-                        "max_output_tokens": 8192,
-                        "response_mime_type": "text/plain",
-                    }
-                )
-
-                # Start a chat session with the extracted resume text
-                chat_session = model.start_chat(
-                    history=[{"role": "user", "parts": [uploaded_text, ""]}]
-                )
-
-                # Send messages to the model to get job matches and improvement suggestions
-                response1 = chat_session.send_message("Analyze the resume for suitable job matches...")
-                response3 = chat_session.send_message("Analyze the resume and suggest points to improve...")
-
-                # Debug: Print responses
-                print(f"Response1: {response1.text}")
-                print(f"Response3: {response3.text}")
-
-                # Clean up the responses
-                suitable_jobs = response1.text.replace('#', '').replace('*', '')
-                improve_resume = response3.text.replace('#', '').replace('*', '')
-
-                # Process the responses for display
-                context = {
-                    'suitable_jobs': process_data(suitable_jobs),
-                    'improve_resume': process_data(improve_resume)
-                }
-
-                # Render the results on the page
-                return render(request, 'analyze_resume.html', context)
-
-            except Exception as e:
-                print(f"Gemini processing error: {e}")
-                return render(request, 'upload_resume.html', {'error': 'Error processing resume with Gemini.'})
-
-        except Exception as e:
-            print(f"Error during processing: {e}")
-            return render(request, 'upload_resume.html', {'error': str(e)})
-
-    # Render the upload page if not a POST request or no file uploaded
-    return render(request, 'upload_resume.html')
-
-
-
-def process_data(data):
-    try:
-        # Example processing: split text into lines and strip any leading/trailing whitespace
-        processed = [line.strip() for line in data.split('\n') if line.strip()]
-        return processed
-    except Exception as e:
-        print(f"Error in processing data: {e}")
-        return []  # Return an empty list or handle according to your needs
-
-
-
-
-def extract_text_from_resume(file):
-    text = ""
-    if file.name.endswith('.pdf'):
-        # For PDF files
-        with fitz.open(file) as pdf_document:
-            for page in pdf_document:
-                text += page.get_text()
-    elif file.name.endswith('.docx'):
-        # Handle DOCX files here if needed
-        from docx import Document
-        doc = Document(file)
-        for paragraph in doc.paragraphs:
-            text += paragraph.text + '\n'
-    return text.strip()
 
 
 
@@ -933,7 +799,7 @@ from django.shortcuts import render
 from .models import Job, JobCategory, Provider
 from django.utils.timezone import now  # Import current date handling
 
-def job_list_user(request):
+def job_list(request):
     # Fetch all jobs initially, filter out jobs where till_date is less than the current date
     jobs = Job.objects.filter(till_date__gt=now())
 
@@ -1044,7 +910,7 @@ def contact_success(request):
 from django.shortcuts import render
 from .models import Job
 from django.db.models import Q
-
+@login_required_custom
 def search_jobs(request):
     query = request.GET.get('q', '')
     jobs = Job.objects.all()
@@ -1760,7 +1626,7 @@ from django.shortcuts import render
 from .models import Job
 from django.contrib.auth.decorators import login_required
 
-@login_required_custom
+@login_required
 def job_list(request):
     # Fetch all jobs and order them by the date they were created
     jobs = Job.objects.all().order_by('-created_on')
@@ -2164,6 +2030,11 @@ def reset_password_admin(request, token):
     return render(request, 'admin/reset_password.html', {'form': form})
 
 
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from .models import Provider
+
 @login_required
 def edit_provider(request):
     current_user = request.user
@@ -2173,7 +2044,7 @@ def edit_provider(request):
         return render(request, 'error.html', {'message': 'You are not associated with any provider profile.'})
 
     if request.method == 'POST':
-        form = ProviderForm(request.POST, request.FILES, user=current_user, instance=provider)
+        form = ProviderForm(request.POST, request.FILES, instance=provider)
         if form.is_valid():
             # Save the form, Cloudinary will handle the file upload
             form.save()
@@ -2181,8 +2052,9 @@ def edit_provider(request):
             return redirect('provider_index')
         else:
             messages.error(request, 'Please correct the errors below.')
+
     else:
-        form = ProviderForm(user=current_user, instance=provider)
+        form = ProviderForm(instance=provider)
 
     return render(request, 'provider/details.html', {'form': form})
 
@@ -2191,10 +2063,131 @@ from .models import Provider
 from django.utils import timezone
 import calendar
 
+@login_required
+def provider_registration_chart(request):
+    # Get the current year
+    current_year = timezone.now().year
+
+    # Create a dictionary to hold the count of registrations per month
+    registrations_per_month = {month: 0 for month in calendar.month_name[1:]}
+
+    # Fetch provider registrations for the current year
+    providers = Provider.objects.filter(created_on__year=current_year)
+
+    # Count registrations per month
+    for provider in providers:
+        month_name = calendar.month_name[provider.created_on.month]
+        registrations_per_month[month_name] += 1
+
+    # Pass the data to the template
+    return render(request, 'admin/provider_registration_chart.html', {
+        'registrations_per_month': registrations_per_month,
+        'current_year': current_year
+    })
 
 
-import cloudinary
-import cloudinary.utils
 
-def get_signed_url(public_id):
-    return cloudinary.utils.cloudinary_url(public_id, sign=True)
+
+# View function to handle resume uploads and analysis
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import ResumeUpload
+import os
+
+@login_required_custom
+def analyze_resume(request):
+    if request.method == 'POST' and request.FILES.get('resume'):
+        # Handle file upload
+        resume = request.FILES['resume']
+
+        # Check if the user already has an uploaded resume
+        existing_resume = ResumeUpload.objects.filter(user=request.user).first()
+        if existing_resume:
+            # Delete the old file if it exists
+            if existing_resume.uploaded_file:
+                file_path = existing_resume.uploaded_file.path
+                try:
+                    # Check if file exists before attempting to delete
+                    if os.path.exists(file_path):
+                        # Close the file if it's open
+                        existing_resume.uploaded_file.close()  # Close the file properly
+                        # Remove the file
+                        os.remove(file_path)
+                except PermissionError:
+                    # Handle the PermissionError gracefully
+                    print(f"PermissionError: The file {file_path} is being used by another process.")
+                except Exception as e:
+                    # Handle other potential errors
+                    print(f"Error deleting file: {str(e)}")
+
+            # Delete the old record
+            existing_resume.delete()
+
+        # Save the new uploaded resume in the database
+        new_resume = ResumeUpload.objects.create(
+            user=request.user,
+            uploaded_file=resume  # Directly use the uploaded file object
+        )
+
+        # Get the full path of the uploaded file
+        uploaded_file_path = new_resume.uploaded_file.path
+
+        # Upload file to Google Gemini
+        gemini_file = upload_to_gemini(uploaded_file_path, mime_type='application/pdf')
+
+        # Wait for the file to be ready
+        wait_for_files_active([gemini_file])
+
+        # Set up model generation configuration
+        generation_config = {
+            "temperature": 1,
+            "top_p": 0.95,
+            "top_k": 64,
+            "max_output_tokens": 8192,
+            "response_mime_type": "text/plain",
+        }
+
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            generation_config=generation_config
+        )
+
+        # Start chat session with the model
+        chat_session = model.start_chat(
+            history=[
+                {
+                    "role": "user",
+                    "parts": [
+                        gemini_file,
+                        "",
+                    ],
+                }
+            ]
+        )
+
+        # Send messages to get responses
+        response1 = chat_session.send_message("Analyze the resume for suitable job matches. when listing, provide details such as job title, average salary a person could get in INR and why it is suitable. dont provide any other data. show job title at the beggining. avoid heading like suitable jobs too. use you/your for pointing to the person and display the best job that suets the user. also include ':' after the heading.")
+        response3 = chat_session.send_message("Analyze the resume and suggest points to improve the quality of the resume and ATS score. dont provide any other data. avoid heading like resume improvements too. use you/your for pointing to the person")
+
+        suitable_jobs = response1.text.replace('#', '').replace('*', '')
+        improve_resume = response3.text.replace('#', '').replace('*', '')
+
+        # Preprocess the data for template rendering
+        def process_data(data):
+            result = []
+            for line in data.splitlines():
+                if ':' in line:
+                    parts = line.split(':', 1)
+                    result.append({'title': parts[0].strip(), 'description': parts[1].strip()})
+                else:
+                    result.append({'title': '', 'description': line.strip()})
+            return result
+
+        context = {
+            'suitable_jobs': process_data(suitable_jobs),
+            'improve_resume': process_data(improve_resume)
+        }
+
+        return render(request, 'analyze_resume.html', context)
+
+    return render(request, 'upload_resume.html')
