@@ -2091,9 +2091,9 @@ def provider_registration_chart(request):
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import ResumeUpload
-import os
+import cloudinary
 
-@login_required
+@login_required_custom
 def analyze_resume(request):
     if request.method == 'POST' and request.FILES.get('resume'):
         # Handle file upload
@@ -2102,25 +2102,8 @@ def analyze_resume(request):
         # Check if the user already has an uploaded resume
         existing_resume = ResumeUpload.objects.filter(user=request.user).first()
         if existing_resume:
-            # Delete the old file if it exists
-            if existing_resume.uploaded_file:
-                file_path = existing_resume.uploaded_file.path
-                try:
-                    # Check if file exists before attempting to delete
-                    if os.path.exists(file_path):
-                        # Close the file if it's open
-                        existing_resume.uploaded_file.close()  # Close the file properly
-                        # Remove the file
-                        os.remove(file_path)
-                except PermissionError:
-                    # Handle the PermissionError gracefully
-                    print(f"PermissionError: The file {file_path} is being used by another process.")
-                except Exception as e:
-                    # Handle other potential errors
-                    print(f"Error deleting file: {str(e)}")
-
-            # Delete the old record
-            existing_resume.delete()
+            # No need to delete the file from the server since we're using Cloudinary
+            existing_resume.delete()  # Just delete the record from the database
 
         # Save the new uploaded resume in the database
         new_resume = ResumeUpload.objects.create(
@@ -2128,11 +2111,11 @@ def analyze_resume(request):
             uploaded_file=resume  # Directly use the uploaded file object
         )
 
-        # Get the full path of the uploaded file
-        uploaded_file_path = new_resume.uploaded_file.path
+        # Get the URL of the uploaded file for processing
+        uploaded_file_url = new_resume.uploaded_file.url  # Get the Cloudinary URL
 
-        # Upload file to Google Gemini
-        gemini_file = upload_to_gemini(uploaded_file_path, mime_type='application/pdf')
+        # Your upload_to_gemini and analysis logic here...
+        gemini_file = upload_to_gemini(uploaded_file_url, mime_type='application/pdf')
 
         # Wait for the file to be ready
         wait_for_files_active([gemini_file])
@@ -2165,8 +2148,8 @@ def analyze_resume(request):
         )
 
         # Send messages to get responses
-        response1 = chat_session.send_message("Analyze the resume for suitable job matches. when listing, provide details such as job title, average salary a person could get in INR and why it is suitable. dont provide any other data. show job title at the beginning. avoid heading like suitable jobs too. use you/your for pointing to the person and display the best job that suits the user. also include ':' after the heading.")
-        response3 = chat_session.send_message("Analyze the resume and suggest points to improve the quality of the resume and ATS score. dont provide any other data. avoid heading like resume improvements too. use you/your for pointing to the person")
+        response1 = chat_session.send_message("Analyze the resume for suitable job matches...")
+        response3 = chat_session.send_message("Analyze the resume and suggest points to improve...")
 
         suitable_jobs = response1.text.replace('#', '').replace('*', '')
         improve_resume = response3.text.replace('#', '').replace('*', '')
