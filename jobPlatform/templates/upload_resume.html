@@ -10,11 +10,13 @@
                 <div class="cv-caption text-center">
                     <p class="pera2">FIND THE BEST JOB</p>
                     <p class="pera1">Upload your resume and find the best jobs that suit your skills and improve your resume with tips and tricks!</p>
-                    
                     <!-- Upload Resume Form -->
                     <form method="post" enctype="multipart/form-data" class="upload-form">
                         {% csrf_token %}
-                        {{ form.file }}  <!-- This will render the file input from the form -->
+                        <label for="resume-upload" id="resume-label" class="upload-btn">
+                            <input type="file" id="resume-upload" name="resume" accept=".pdf,.doc,.docx" required hidden>
+                            <span id="file-name" class="button-text">Choose File</span>
+                        </label>
                         <button type="submit" class="upload-btn">Upload</button>
                     </form>
                     
@@ -70,6 +72,7 @@
                             });
                         });
                     </script>
+                    
                 </div>
             </div>
         </div>
@@ -124,3 +127,6 @@
 <!-- Featured Job Area End -->
 
 {% endblock %}
+<style>
+
+</style>

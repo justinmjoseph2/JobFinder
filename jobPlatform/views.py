@@ -618,35 +618,6 @@ def upload_to_gemini(file_url, mime_type='application/pdf'):
 
     return gemini_file
 
-from django.shortcuts import render
-from .forms import UploadFileForm  # Import the form
-
-def upload_file(request):
-    form = UploadFileForm()  # Initialize an empty form
-
-    if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            uploaded_file = request.FILES['file']  # Access the uploaded file
-            # Handle the uploaded file here
-            # handle_uploaded_file(uploaded_file)  # Optional file handling function
-            return render(request, 'success.html', {'filename': uploaded_file.name})
-
-    return render(request, 'upload_resume.html', {'form': form})  # Pass the form to the template
-
-
-# jobPlatform/views.py (continued)
-import os
-
-def handle_uploaded_file(file):
-    # Define where you want to save the file
-    file_path = os.path.join('uploads', file.name)
-
-    # Save the file in chunks (useful for large files)
-    with open(file_path, 'wb+') as destination:
-        for chunk in file.chunks():
-            destination.write(chunk)
-
 
 def wait_for_files_active(files):
     """Waits for the given files to be active."""

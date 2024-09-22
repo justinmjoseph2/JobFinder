@@ -509,9 +509,3 @@ class ResetPasswordFormAdmin(forms.Form):
     )
 
 
-# jobPlatform/forms.py
-from django import forms
-
-class UploadFileForm(forms.Form):
-    # Define a file field for uploading files
-    file = forms.FileField(label='Select a file')
