@@ -21,7 +21,6 @@
                     </form>
                     
                     <style>
-                        /* Common button styling */
                         .upload-btn {
                             display: inline-block;
                             padding: 10px 20px;
@@ -35,33 +34,33 @@
                             text-align: center;
                             transition: background-color 0.3s ease, border-color 0.3s ease;
                             text-transform: uppercase;
-                            margin: 0 5px; /* Space between buttons */
+                            margin: 0 5px;
                         }
-                    
+
                         .upload-btn:hover {
                             background-color: #dc3545;
                             border-color: #dc3545;
                         }
-                    
+
                         #resume-label.file-selected {
-                            background-color: #4caf50; /* Green background for selected file */
-                            border-color: #4caf50; /* Green border for selected file */
+                            background-color: #4caf50;
+                            border-color: #4caf50;
                         }
-                    
+
                         #file-name.file-selected {
-                            color: #fff; /* White text for selected file */
+                            color: #fff;
                         }
                     </style>
-                    
+
                     <script>
                         document.addEventListener('DOMContentLoaded', function() {
                             const fileInput = document.getElementById('resume-upload');
                             const fileLabel = document.getElementById('resume-label');
                             const fileName = document.getElementById('file-name');
-                    
+
                             fileInput.addEventListener('change', function() {
                                 const file = fileInput.files[0];
-                    
+
                                 if (file) {
                                     fileName.textContent = file.name;
                                     fileLabel.classList.add('file-selected');
@@ -72,7 +71,6 @@
                             });
                         });
                     </script>
-                    
                 </div>
             </div>
         </div>
@@ -80,53 +78,4 @@
 </div>
 <!-- Online CV Area End -->
 
-<!-- Featured Job Area Start -->
-<section class="featured-job-area feature-padding" hidden>
-    <div class="container">
-        <!-- Section Title -->
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="section-tittle text-center">
-                    <span>Recent Job</span>
-                    <h2>Featured Jobs</h2>
-                </div>
-            </div>
-        </div>
-        <div class="row justify-content-center">
-            <div class="col-xl-10">
-                {% if suitable_jobs %}
-                    <!-- Display suitable jobs -->
-                    {% for job in suitable_jobs %}
-                    <div class="single-job-items mb-30">
-                        <div class="job-items">
-                            <div class="company-img">
-                                <a href="{% url 'job_details' job.id %}"><img src="{% static 'assets/img/icon/job-list1.png' %}" alt=""></a>
-                            </div>
-                            <div class="job-tittle">
-                                <a href="{% url 'job_details' job.id %}"><h4>{{ job.title }}</h4></a>
-                                <ul>
-                                    <li>{{ job.company }}</li>
-                                    <li><i class="fas fa-map-marker-alt"></i>{{ job.location }}</li>
-                                    <li>{{ job.salary_range }}</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="items-link f-right">
-                            <a href="{% url 'job_details' job.id %}">{{ job.job_type }}</a>
-                            <span>{{ job.posted_time }}</span>
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p>No suitable jobs found based on your resume.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</section>
-<!-- Featured Job Area End -->
-
 {% endblock %}
-<style>
-
-</style>
