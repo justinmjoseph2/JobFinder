@@ -654,7 +654,7 @@ import fitz  # PyMuPDF
 import os
 import genai
 
-@login_required
+@login_required_custom
 def analyze_resume(request):
     if request.method == 'POST' and request.FILES.get('resume'):
         resume = request.FILES['resume']
@@ -707,10 +707,16 @@ def analyze_resume(request):
             processed_jobs = process_data(suitable_jobs)
             processed_improvements = process_data(improve_resume)
 
+            # Debug: Check processed data
+            print(f"Processed Suitable Jobs: {processed_jobs}")
+            print(f"Processed Improvements: {processed_improvements}")
+
             context = {
                 'suitable_jobs': processed_jobs,
                 'improve_resume': processed_improvements
             }
+
+            print(f"Context Data: {context}")  # Debug: Show what is being passed to the template
 
             return render(request, 'analyze_resume.html', context)
 
@@ -719,6 +725,7 @@ def analyze_resume(request):
             return render(request, 'upload_resume.html', {'error': str(e)})
 
     return render(request, 'upload_resume.html')
+
 
 
 

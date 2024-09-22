@@ -2,7 +2,7 @@
 {% block content %}
 {% load static %}
 
-<style>
+<!-- <style>
     body {
         font-family: 'Roboto', sans-serif;
         background-color: #f0f2f5;
@@ -131,6 +131,26 @@
     <div style="text-align: center;">
         <a href="{% url 'analyze_resume' %}" class="resume-back-button">Upload Another Resume</a>
     </div>
-</div>
+</div> -->
+
+<!-- analyze_resume.html -->
+<h2>Suitable Job Matches</h2>
+<ul>
+    {% for job in suitable_jobs %}
+        <li>{{ job }}</li>
+    {% empty %}
+        <li>No suitable jobs found.</li>
+    {% endfor %}
+</ul>
+
+<h2>Suggestions to Improve Your Resume</h2>
+<ul>
+    {% for suggestion in improve_resume %}
+        <li>{{ suggestion }}</li>
+    {% empty %}
+        <li>No improvement suggestions found.</li>
+    {% endfor %}
+</ul>
+
 
 {% endblock %}
