@@ -23,4 +23,3 @@ cloudinary>=1.31.0
 django-cloudinary-storage>=0.0.6
 PyMuPDF
 fitz
-re
