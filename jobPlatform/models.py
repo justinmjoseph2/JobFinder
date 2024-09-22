@@ -76,17 +76,15 @@ class Contact(models.Model):
         return f"{self.name}, {self.email}, {self.message}"
 
 
-
 from django.db import models
 from django.contrib.auth.models import User
 
 class ResumeUpload(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='resumes')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     uploaded_file = models.FileField(upload_to='resumes/')
+    fileName = models.CharField(max_length=255)  # Ensure this field is defined
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Resume of {self.user.username} uploaded on {self.uploaded_at}"
 
 
 
