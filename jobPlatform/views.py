@@ -2086,6 +2086,13 @@ def provider_registration_chart(request):
     })
 
 
+
+
+import requests
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import ResumeUpload
+
 @login_required
 def analyze_resume(request):
     if request.method == 'POST' and request.FILES.get('resume'):
