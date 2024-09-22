@@ -619,23 +619,33 @@ def upload_to_gemini(file_url, mime_type='application/pdf'):
     return gemini_file
 
 from django.shortcuts import render
-from django.core.files.storage import FileSystemStorage
-from .forms import YourForm  # Replace with your actual form
+from .forms import UploadFileForm  # Import the form
 
 def upload_file(request):
-    if request.method == 'POST' and request.FILES['file']:
-        uploaded_file = request.FILES['file']
-        fs = FileSystemStorage()
-        filename = fs.save(uploaded_file.name, uploaded_file)  # Save the file
-        file_url = fs.url(filename)
+    form = UploadFileForm()  # Initialize an empty form
 
-        # Now you can process the file as needed
-        # For example, read the file content, parse it, etc.
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            uploaded_file = request.FILES['file']  # Access the uploaded file
+            # Handle the uploaded file here
+            # handle_uploaded_file(uploaded_file)  # Optional file handling function
+            return render(request, 'success.html', {'filename': uploaded_file.name})
 
-        return render(request, 'upload.html', {
-            'file_url': file_url  # Pass the file URL to the template
-        })
-    return render(request, 'upload.html')
+    return render(request, 'upload_resume.html', {'form': form})  # Pass the form to the template
+
+
+# jobPlatform/views.py (continued)
+import os
+
+def handle_uploaded_file(file):
+    # Define where you want to save the file
+    file_path = os.path.join('uploads', file.name)
+
+    # Save the file in chunks (useful for large files)
+    with open(file_path, 'wb+') as destination:
+        for chunk in file.chunks():
+            destination.write(chunk)
 
 
 def wait_for_files_active(files):
