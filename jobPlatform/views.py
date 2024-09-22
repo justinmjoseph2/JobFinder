@@ -2088,10 +2088,10 @@ def provider_registration_chart(request):
 
 
 
+import requests
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import ResumeUpload
-import cloudinary
 
 @login_required
 def analyze_resume(request):
@@ -2114,65 +2114,72 @@ def analyze_resume(request):
         # Get the URL of the uploaded file for processing
         uploaded_file_url = new_resume.uploaded_file.url
 
-        # Your upload_to_gemini and analysis logic here...
-        gemini_file = upload_to_gemini(uploaded_file_url, mime_type='application/pdf')
+        # Download the file to a temporary location
+        response = requests.get(uploaded_file_url)
+        if response.status_code == 200:
+            with open('temp_resume.pdf', 'wb') as f:
+                f.write(response.content)
 
-        # Wait for the file to be ready
-        wait_for_files_active([gemini_file])
+            # Now upload the downloaded file to Gemini
+            gemini_file = upload_to_gemini('temp_resume.pdf', mime_type='application/pdf')
 
-        # Set up model generation configuration
-        generation_config = {
-            "temperature": 1,
-            "top_p": 0.95,
-            "top_k": 64,
-            "max_output_tokens": 8192,
-            "response_mime_type": "text/plain",
-        }
+            # Your analysis logic here...
+            wait_for_files_active([gemini_file])
 
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            generation_config=generation_config
-        )
+            # Set up model generation configuration
+            generation_config = {
+                "temperature": 1,
+                "top_p": 0.95,
+                "top_k": 64,
+                "max_output_tokens": 8192,
+                "response_mime_type": "text/plain",
+            }
 
-        # Start chat session with the model
-        chat_session = model.start_chat(
-            history=[
-                {
-                    "role": "user",
-                    "parts": [
-                        gemini_file,
-                        "",
-                    ],
-                }
-            ]
-        )
+            model = genai.GenerativeModel(
+                model_name="gemini-1.5-flash",
+                generation_config=generation_config
+            )
 
-        # Send messages to get responses
-        # Send messages to get responses
-        response1 = chat_session.send_message("Analyze the resume for suitable job matches. when listing, provide details such as job title, average salary a person could get in INR and why it is suitable. dont provide any other data. show job title at the beginning. avoid heading like suitable jobs too. use you/your for pointing to the person and display the best job that suits the user. also include ':' after the heading.")
-        response3 = chat_session.send_message("Analyze the resume and suggest points to improve the quality of the resume and ATS score. dont provide any other data. avoid heading like resume improvements too. use you/your for pointing to the person")
+            # Start chat session with the model
+            chat_session = model.start_chat(
+                history=[
+                    {
+                        "role": "user",
+                        "parts": [
+                            gemini_file,
+                            "",
+                        ],
+                    }
+                ]
+            )
+            # Send messages to get responses
+            response1 = chat_session.send_message("Analyze the resume for suitable job matches. when listing, provide details such as job title, average salary a person could get in INR and why it is suitable. dont provide any other data. show job title at the beginning. avoid heading like suitable jobs too. use you/your for pointing to the person and display the best job that suits the user. also include ':' after the heading.")
+            response3 = chat_session.send_message("Analyze the resume and suggest points to improve the quality of the resume and ATS score. dont provide any other data. avoid heading like resume improvements too. use you/your for pointing to the person")
 
-        suitable_jobs = response1.text.replace('#', '').replace('*', '')
-        improve_resume = response3.text.replace('#', '').replace('*', '')
+            suitable_jobs = response1.text.replace('#', '').replace('*', '')
+            improve_resume = response3.text.replace('#', '').replace('*', '')
 
-        # Preprocess the data for template rendering
-        def process_data(data):
-            result = []
-            for line in data.splitlines():
-                if ':' in line:
-                    parts = line.split(':', 1)
-                    result.append({'title': parts[0].strip(), 'description': parts[1].strip()})
-                else:
-                    result.append({'title': '', 'description': line.strip()})
-            return result
+            # Preprocess the data for template rendering
+            def process_data(data):
+                result = []
+                for line in data.splitlines():
+                    if ':' in line:
+                        parts = line.split(':', 1)
+                        result.append({'title': parts[0].strip(), 'description': parts[1].strip()})
+                    else:
+                        result.append({'title': '', 'description': line.strip()})
+                return result
 
-        context = {
-            'suitable_jobs': process_data(suitable_jobs),
-            'improve_resume': process_data(improve_resume)
-        }
+            context = {
+                'suitable_jobs': process_data(suitable_jobs),
+                'improve_resume': process_data(improve_resume)
+            }
 
-        return render(request, 'analyze_resume.html', context)
+            return render(request, 'analyze_resume.html', context)
+        else:
+            return render(request, 'upload_resume.html', {'error': 'Failed to download the resume.'})
 
     return render(request, 'upload_resume.html')
+
 
 
