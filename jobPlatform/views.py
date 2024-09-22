@@ -645,6 +645,15 @@ def login_required_custom(view_func):
 
 
 
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import ResumeUpload
+import cloudinary
+import cloudinary.uploader
+import fitz  # PyMuPDF
+import os
+import genai
+
 @login_required
 def analyze_resume(request):
     if request.method == 'POST' and request.FILES.get('resume'):
@@ -687,16 +696,20 @@ def analyze_resume(request):
                 "Analyze the resume for suitable job matches...")
             response3 = chat_session.send_message(
                 "Analyze the resume and suggest points to improve...")
-            
+
             print(f"Response1: {response1.text}")  # Debug: Show response1 text
             print(f"Response3: {response3.text}")  # Debug: Show response3 text
-            
+
             suitable_jobs = response1.text.replace('#', '').replace('*', '')
             improve_resume = response3.text.replace('#', '').replace('*', '')
 
+            # Process the responses safely
+            processed_jobs = process_data(suitable_jobs)
+            processed_improvements = process_data(improve_resume)
+
             context = {
-                'suitable_jobs': process_data(suitable_jobs),
-                'improve_resume': process_data(improve_resume)
+                'suitable_jobs': processed_jobs,
+                'improve_resume': processed_improvements
             }
 
             return render(request, 'analyze_resume.html', context)
@@ -706,6 +719,19 @@ def analyze_resume(request):
             return render(request, 'upload_resume.html', {'error': str(e)})
 
     return render(request, 'upload_resume.html')
+
+
+
+def process_data(data):
+    try:
+        # Example processing: split text into lines and strip any leading/trailing whitespace
+        processed = [line.strip() for line in data.split('\n') if line.strip()]
+        return processed
+    except Exception as e:
+        print(f"Error in processing data: {e}")
+        return []  # Return an empty list or handle according to your needs
+
+
 
 
 def extract_text_from_resume(file):
