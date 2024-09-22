@@ -654,6 +654,14 @@ import fitz  # PyMuPDF
 import os
 import genai
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.core.files.base import ContentFile  # Import ContentFile for file handling
+import cloudinary.uploader
+from .models import ResumeUpload  # Ensure your model import is correct
+from .utils import extract_text_from_resume, process_data, upload_to_gemini, wait_for_files_active  # Adjust imports as needed
+import genai
+
 @login_required
 def analyze_resume(request):
     if request.method == 'POST' and request.FILES.get('resume'):
@@ -661,14 +669,18 @@ def analyze_resume(request):
         try:
             # Extract text from the uploaded resume
             text = extract_text_from_resume(resume)
-            print(f"Extracted text: {text[:100]}")  # Debug: Show first 100 characters of text
+            print(f"Extracted text: {text[:100]}")  # Debug: Show first 100 characters of extracted text
 
-            # Attempt to upload file to Cloudinary
+            # Convert the uploaded file to ContentFile for Cloudinary
+            file_content = ContentFile(resume.read())  # Read and convert the file content
+
             try:
-                cloudinary_response = cloudinary.uploader.upload(resume, public_id=resume.name)
+                # Upload the file content to Cloudinary
+                cloudinary_response = cloudinary.uploader.upload(file_content, public_id=resume.name)
                 print(f"Cloudinary response: {cloudinary_response}")  # Debug: Show Cloudinary response
+
             except Exception as e:
-                print(f"Cloudinary upload error: {e}")  # Debug: Show upload errors
+                print(f"Cloudinary upload error: {e}")
                 return render(request, 'upload_resume.html', {'error': 'Error uploading file to Cloudinary.'})
 
             # Store the uploaded resume information in the database
@@ -679,21 +691,17 @@ def analyze_resume(request):
                     uploaded_file=cloudinary_response.get('secure_url', '')
                 )
             except Exception as e:
-                print(f"Database save error: {e}")  # Debug: Show database save errors
-                return render(request, 'upload_resume.html', {'error': 'Error saving file information.'})
+                print(f"Database save error: {e}")
+                return render(request, 'upload_resume.html', {'error': 'Error saving file information to the database.'})
 
             uploaded_text = text
 
-            # Attempt to upload text to Google Gemini and handle response
+            # Upload text to Google Gemini and handle response
             try:
                 gemini_file = upload_to_gemini(uploaded_text, mime_type='text/plain')
                 wait_for_files_active([gemini_file])
-            except Exception as e:
-                print(f"Gemini upload error: {e}")  # Debug: Show Gemini upload errors
-                return render(request, 'upload_resume.html', {'error': 'Error uploading to Gemini.'})
 
-            # Generative Model interaction
-            try:
+                # Initialize and configure the Generative Model
                 model = genai.GenerativeModel(
                     model_name="gemini-1.5-flash",
                     generation_config={
@@ -704,48 +712,42 @@ def analyze_resume(request):
                         "response_mime_type": "text/plain",
                     }
                 )
+
+                # Start a chat session with the extracted resume text
                 chat_session = model.start_chat(
                     history=[{"role": "user", "parts": [uploaded_text, ""]}]
                 )
-                response1 = chat_session.send_message(
-                    "Analyze the resume for suitable job matches..."
-                )
-                response3 = chat_session.send_message(
-                    "Analyze the resume and suggest points to improve..."
-                )
 
-                print(f"Response1: {response1.text}")  # Debug: Show response1 text
-                print(f"Response3: {response3.text}")  # Debug: Show response3 text
-            except Exception as e:
-                print(f"Error during Gemini interaction: {e}")  # Debug: Show model interaction errors
-                return render(request, 'upload_resume.html', {'error': 'Error during resume analysis.'})
+                # Send messages to the model to get job matches and improvement suggestions
+                response1 = chat_session.send_message("Analyze the resume for suitable job matches...")
+                response3 = chat_session.send_message("Analyze the resume and suggest points to improve...")
 
-            # Process the responses safely
-            try:
+                # Debug: Print responses
+                print(f"Response1: {response1.text}")
+                print(f"Response3: {response3.text}")
+
+                # Clean up the responses
                 suitable_jobs = response1.text.replace('#', '').replace('*', '')
                 improve_resume = response3.text.replace('#', '').replace('*', '')
 
-                processed_jobs = process_data(suitable_jobs)
-                processed_improvements = process_data(improve_resume)
-
-                # Debug: Check processed data
-                print(f"Processed Suitable Jobs: {processed_jobs}")
-                print(f"Processed Improvements: {processed_improvements}")
-
+                # Process the responses for display
                 context = {
-                    'suitable_jobs': processed_jobs,
-                    'improve_resume': processed_improvements
+                    'suitable_jobs': process_data(suitable_jobs),
+                    'improve_resume': process_data(improve_resume)
                 }
-            except Exception as e:
-                print(f"Error processing data: {e}")  # Debug: Show errors in data processing
-                return render(request, 'upload_resume.html', {'error': 'Error processing resume data.'})
 
-            return render(request, 'analyze_resume.html', context)
+                # Render the results on the page
+                return render(request, 'analyze_resume.html', context)
+
+            except Exception as e:
+                print(f"Gemini processing error: {e}")
+                return render(request, 'upload_resume.html', {'error': 'Error processing resume with Gemini.'})
 
         except Exception as e:
-            print(f"Error during processing: {e}")  # Final catch-all error handler
+            print(f"Error during processing: {e}")
             return render(request, 'upload_resume.html', {'error': str(e)})
 
+    # Render the upload page if not a POST request or no file uploaded
     return render(request, 'upload_resume.html')
 
 
