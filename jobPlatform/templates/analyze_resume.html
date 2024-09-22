@@ -9,20 +9,18 @@
         <h2>Suitable Jobs</h2>
         {% if suitable_jobs %}
             {% for job in suitable_jobs %}
-                {% if job.title or job.description %}
-                    <div class="resume-item-box">
-                        {% if job.title %}
-                            <p class="resume-bold-before-colon">
-                                <a href="{% url 'jobcv' job.title %}" style="text-decoration: none; color: #fb246a;">
-                                    {{ job.title }}
-                                </a>:
-                            </p>
-                        {% endif %}
-                        {% if job.description %}
-                            <p>{{ job.description }}</p>
-                        {% endif %}
-                    </div>
-                {% endif %}
+                <div class="resume-item-box">
+                    {% if job.title %}
+                        <p class="resume-bold-before-colon">
+                            <a href="{% url 'jobcv' job.title %}" style="text-decoration: none; color: #fb246a;">
+                                {{ job.title }}
+                            </a>:
+                        </p>
+                    {% endif %}
+                    {% if job.description %}
+                        <p>{{ job.description }}</p>
+                    {% endif %}
+                </div>
             {% endfor %}
         {% else %}
             <p>No suitable jobs found.</p>
@@ -33,16 +31,14 @@
         <h2>Improve Your Resume</h2>
         {% if improve_resume %}
             {% for resume_point in improve_resume %}
-                {% if resume_point.title or resume_point.description %}
-                    <div class="resume-item-box">
-                        {% if resume_point.title %}
-                            <p class="resume-bold-before-colon">{{ resume_point.title }}:</p>
-                        {% endif %}
-                        {% if resume_point.description %}
-                            <p>{{ resume_point.description }}</p>
-                        {% endif %}
-                    </div>
-                {% endif %}
+                <div class="resume-item-box">
+                    {% if resume_point.title %}
+                        <p class="resume-bold-before-colon">{{ resume_point.title }}:</p>
+                    {% endif %}
+                    {% if resume_point.description %}
+                        <p>{{ resume_point.description }}</p>
+                    {% endif %}
+                </div>
             {% endfor %}
         {% else %}
             <p>No resume improvement suggestions found.</p>
