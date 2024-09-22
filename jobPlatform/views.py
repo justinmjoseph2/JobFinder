@@ -645,82 +645,54 @@ def login_required_custom(view_func):
 
 
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from .models import ResumeUpload
-import cloudinary
-import cloudinary.uploader
-import fitz  # PyMuPDF
-import os
-
 @login_required
 def analyze_resume(request):
     if request.method == 'POST' and request.FILES.get('resume'):
-        # Handle file upload
         resume = request.FILES['resume']
-
         try:
             # Extract text from the uploaded resume
             text = extract_text_from_resume(resume)
+            print(f"Extracted text: {text[:100]}")  # Debug: Show first 100 characters of text
 
             # Upload file to Cloudinary
             cloudinary_response = cloudinary.uploader.upload(resume, public_id=resume.name)
+            print(f"Cloudinary response: {cloudinary_response}")  # Debug: Show Cloudinary response
 
             # Store the uploaded resume information in the database
             ResumeUpload.objects.create(
                 user=request.user,
                 fileName=resume.name,
-                uploaded_file=cloudinary_response['secure_url']  # Use Cloudinary's secure URL
+                uploaded_file=cloudinary_response['secure_url']
             )
 
-            # Use the extracted text for analysis
             uploaded_text = text
-
-            # Upload text to Google Gemini
+            # Upload text to Google Gemini and handle response
             gemini_file = upload_to_gemini(uploaded_text, mime_type='text/plain')
-
-            # Wait for the file to be ready
             wait_for_files_active([gemini_file])
-
-            # Set up model generation configuration
-            generation_config = {
-                "temperature": 1,
-                "top_p": 0.95,
-                "top_k": 64,
-                "max_output_tokens": 8192,
-                "response_mime_type": "text/plain",
-            }
 
             model = genai.GenerativeModel(
                 model_name="gemini-1.5-flash",
-                generation_config=generation_config
+                generation_config={
+                    "temperature": 1,
+                    "top_p": 0.95,
+                    "top_k": 64,
+                    "max_output_tokens": 8192,
+                    "response_mime_type": "text/plain",
+                }
             )
-
-            # Start chat session with the model
             chat_session = model.start_chat(
-                history=[{
-                    "role": "user",
-                    "parts": [uploaded_text, ""]  # Pass the extracted text
-                }]
+                history=[{"role": "user", "parts": [uploaded_text, ""]}]
             )
-
-            # Send messages to get responses
-            response1 = chat_session.send_message("Analyze the resume for suitable job matches. when listing, provide details such as job title, average salary a person could get in INR and why it is suitable. dont provide any other data. show job title at the beggining. avoid heading like suitable jobs too. use you/your for pointing to the person and display the best job that suets the user. also include ':' after the heading.")
-            response3 = chat_session.send_message("Analyze the resume and suggest points to improve the quality of the resume and ATS score. dont provide any other data. avoid heading like resume improvements too. use you/your for pointing to the person")
-
+            response1 = chat_session.send_message(
+                "Analyze the resume for suitable job matches...")
+            response3 = chat_session.send_message(
+                "Analyze the resume and suggest points to improve...")
+            
+            print(f"Response1: {response1.text}")  # Debug: Show response1 text
+            print(f"Response3: {response3.text}")  # Debug: Show response3 text
+            
             suitable_jobs = response1.text.replace('#', '').replace('*', '')
             improve_resume = response3.text.replace('#', '').replace('*', '')
-
-            # Preprocess the data for template rendering
-            def process_data(data):
-                result = []
-                for line in data.splitlines():
-                    if ':' in line:
-                        parts = line.split(':', 1)
-                        result.append({'title': parts[0].strip(), 'description': parts[1].strip()})
-                    else:
-                        result.append({'title': '', 'description': line.strip()})
-                return result
 
             context = {
                 'suitable_jobs': process_data(suitable_jobs),
@@ -731,10 +703,10 @@ def analyze_resume(request):
 
         except Exception as e:
             print(f"Error during processing: {e}")
-            # Handle error response to user
             return render(request, 'upload_resume.html', {'error': str(e)})
 
     return render(request, 'upload_resume.html')
+
 
 def extract_text_from_resume(file):
     text = ""
