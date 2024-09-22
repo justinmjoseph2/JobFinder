@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load static %}
+{% load cloudinary %}
+
+
 <style>
     .job-box {
         width: 95%;
@@ -105,7 +109,7 @@
                         <!-- Image Column -->
                         <div class="col-md-3">
                             <div class="company-img">
-                                <img src="{{ job.provider.company_logo.url }}" alt="Company Logo">
+                                <img src="{{ job.provider.company_logo.url }}" alt="Company Logo" class="company-logo" />
                             </div>
                         </div>
                         <!-- Title and Provider Column -->

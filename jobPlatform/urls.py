@@ -59,6 +59,8 @@ urlpatterns = [
     path('provider/notifications/', views.notifications, name='notifications'),
     path('provider/notifications/mark-as-read/<int:notification_id>/', views.mark_as_read, name='mark_as_read'),
     path('notifications/delete/<int:notification_id>/', views.delete_notification, name='delete_notification'),
+    path('generate-signed-url/', views.GenerateSignedURLView.as_view(), name='generate_signed_url'),
+
 
     #Admin
     path('admin-login/', views.custom_admin_login, name='admin_login'),

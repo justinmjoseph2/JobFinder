@@ -613,11 +613,6 @@ import google.generativeai as genai
 genai.configure(api_key="AIzaSyDHlaH_BLjVfTy-zDD6FAeJGEasRvAh9iU")
 
 
-def upload_to_gemini(path, mime_type=None):
-    """Uploads the given file to Gemini."""
-    file = genai.upload_file(path, mime_type=mime_type)
-    return file
-
 def wait_for_files_active(files):
     """Waits for the given files to be active."""
     for name in (file.name for file in files):
@@ -2087,76 +2082,160 @@ def provider_registration_chart(request):
 
 
 
-
-import requests
-from django.shortcuts import render
+from django.shortcuts import render 
 from django.contrib.auth.decorators import login_required
 from .models import ResumeUpload
+import google.generativeai as genai
+import fitz  # PyMuPDF for handling PDF files
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import re
 
-@login_required
+GEMINI_API_KEY = 'AIzaSyDHlaH_BLjVfTy-zDD6FAeJGEasRvAh9iU'
+
+def clean_text(text):
+    # Remove unwanted symbols except for standard punctuation
+    return re.sub(r'[^\w\s.,;:()\-]', '', text)
+
+@login_required_custom
 def analyze_resume(request):
     if request.method == 'POST' and request.FILES.get('resume'):
         resume = request.FILES['resume']
-        new_resume = ResumeUpload.objects.create(user=request.user, uploaded_file=resume, fileName=resume.name)
-        uploaded_file_url = new_resume.uploaded_file.url
 
-        response = requests.get(uploaded_file_url)
-        if response.status_code == 200:
-            temp_filename = 'temp_resume.pdf'
-            with open(temp_filename, 'wb') as f:
-                f.write(response.content)
+        # Ensure the uploaded file is not empty
+        if isinstance(resume, InMemoryUploadedFile) and resume.size == 0:
+            return render(request, 'upload_resume.html', {'error': 'The uploaded file is empty. Please upload a valid resume.'})
 
-            gemini_file = upload_to_gemini(temp_filename, mime_type='application/pdf')
+        extracted_text = ''
+        try:
+            # Read the file content properly as a binary stream
+            resume_content = resume.read()
 
-            wait_for_files_active([gemini_file])
+            # Validate that content is not empty after reading
+            if not resume_content:
+                return render(request, 'upload_resume.html', {'error': 'Failed to read the file content. The file may be corrupt or unsupported.'})
 
-            generation_config = {
-                "temperature": 1,
-                "top_p": 0.95,
-                "top_k": 64,
-                "max_output_tokens": 8192,
-                "response_mime_type": "text/plain",
-            }
+            # Extract text based on file type
+            if resume.name.endswith('.pdf'):
+                # Extract text from PDF using PyMuPDF
+                doc = fitz.open(stream=resume_content, filetype='pdf')
+                for page in doc:
+                    extracted_text += page.get_text()
+                doc.close()
+            else:
+                # Extract text for plain text files or other readable formats
+                extracted_text = resume_content.decode('utf-8', errors='ignore')
 
-            model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=generation_config)
-            chat_session = model.start_chat(history=[{"role": "user", "parts": [gemini_file, ""]}])
+            # Reset the file pointer to the beginning before any further use
+            resume.seek(0)
 
-            # Send messages to get responses
-            response1 = chat_session.send_message("Analyze the resume for suitable job matches. when listing, provide details such as job title, average salary a person could get in INR and why it is suitable. dont provide any other data. show job title at the beginning. avoid heading like suitable jobs too. use you/your for pointing to the person and display the best job that suits the user. also include ':' after the heading.")
-            response3 = chat_session.send_message("Analyze the resume and suggest points to improve the quality of the resume and ATS score. dont provide any other data. avoid heading like resume improvements too. use you/your for pointing to the person")
+        except Exception as e:
+            # Handle exceptions and provide user feedback
+            return render(request, 'upload_resume.html', {'error': f'Error processing file: {str(e)}'})
 
-            suitable_jobs = response1.text.replace('#', '').replace('*', '')
-            improve_resume = response3.text.replace('#', '').replace('*', '')
+        # Check if extracted text is empty after processing
+        if not extracted_text.strip():
+            return render(request, 'upload_resume.html', {'error': 'No readable text could be extracted from the uploaded file. Please ensure the file contains readable text.'})
 
-            # Debugging output
-            print("Suitable Jobs:", suitable_jobs)
-            print("Improve Resume:", improve_resume)
+        # Configure the API key for generative AI
+        genai.configure(api_key=GEMINI_API_KEY)
 
-            # Process data
-            def process_data(data):
-                result = []
-                for line in data.splitlines():
-                    if ':' in line:
-                        parts = line.split(':', 1)
-                        result.append({'title': parts[0].strip(), 'description': parts[1].strip()})
-                    else:
-                        result.append({'title': '', 'description': line.strip()})
-                return result
+        # Create the generative model
+        model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 
-            context = {
-                'suitable_jobs': process_data(suitable_jobs),
-                'improve_resume': process_data(improve_resume)
-            }
+        # Use extracted text for AI analysis
+        job_analysis_response = model.generate_content(
+            f"Analyze the resume: {extracted_text} for suitable job matches. Provide details such as job title, average salary in INR, and why it is suitable. Display the job title at the beginning. Use 'you/your' for pointing to the person. Include ':' after the heading. Avoid formatting, bolding, and other types of text decorations and special characters on the result. dont show seperate headings for contents for one job. the output data should be like, (<heading>: <average salar + why this job>)"
+        )
+        resume_improvement_response = model.generate_content(
+            f"Analyze the resume: {extracted_text} and suggest points to improve the quality and ATS score. Avoid headings like 'resume improvements'. Use 'you/your' for pointing to the person. dont show seperate headings for contents for one job. the output data should be like, (<heading>: <description>)"
+        )
 
-            # Debugging context
-            print("Context:", context)
+        # Extract content from AI responses
+        suitable_jobs = job_analysis_response.text
+        improve_resume = resume_improvement_response.text
 
-            return render(request, 'analyze_resume.html', context)
-        else:
-            return render(request, 'upload_resume.html', {'error': 'Failed to download the resume.'})
+        def process_data(data):
+            result = []
+            for line in data.splitlines():
+                cleaned_line = clean_text(line)
+                if ':' in cleaned_line:
+                    parts = cleaned_line.split(':', 1)
+                    result.append({'title': parts[0].strip(), 'description': parts[1].strip()})
+                else:
+                    result.append({'title': '', 'description': cleaned_line.strip()})
+            return result
+
+        # Save the resume after processing
+        existing_resume = ResumeUpload.objects.filter(user=request.user).first()
+        if existing_resume:
+            existing_resume.delete()
+
+        # Reset the file pointer again before saving to ensure proper upload
+        resume.seek(0)
+
+        new_resume = ResumeUpload.objects.create(
+            user=request.user,
+            uploaded_file=resume
+        )
+
+        context = {
+            'suitable_jobs': process_data(suitable_jobs),
+            'improve_resume': process_data(improve_resume)
+        }
+
+        return render(request, 'analyze_resume.html', context)
 
     return render(request, 'upload_resume.html')
 
 
 
 
+import os
+import cloudinary
+import cloudinary.utils
+from django.http import JsonResponse
+from django.views import View
+
+# Configure Cloudinary settings
+cloudinary.config(
+    cloud_name=os.environ.get('dxm5scbpw'),
+    api_key=os.environ.get('798278373751285'),
+    api_secret=os.environ.get('-FS_NRNlGTylyBoGr8yZaI7lN9M'),
+)
+
+class GenerateSignedURLView(View):
+    def post(self, request):
+        # Get the public ID from the request (e.g., from a form submission)
+        public_ids = request.POST.getlist('public_ids')  # Expecting a list of IDs
+
+        # Generate signed URLs
+        signed_urls = {public_id: self.generate_signed_url(public_id) for public_id in public_ids}
+
+        return JsonResponse(signed_urls)
+
+    def generate_signed_url(self, public_id):
+        # Generate a signed URL for the given public ID
+        signed_url = cloudinary.utils.cloudinary_url(
+            public_id, 
+            sign_url=True, 
+            type='upload'
+        )[0]
+        return signed_url
+
+
+
+api_key = 'AIzaSyDHlaH_BLjVfTy-zDD6FAeJGEasRvAh9iU'
+
+import requests
+
+def upload_to_gemini(file_url, mime_type, api_key):
+    headers = {
+        'Authorization': f'Bearer {api_key}',  # Use your API key here
+        'Content-Type': mime_type,
+    }
+    response = requests.post('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=', headers=headers, json={'url': file_url})
+
+    if response.status_code != 200:
+        raise Exception(f"Failed to upload: {response.status_code} - {response.text}")
+
+    return response.json()

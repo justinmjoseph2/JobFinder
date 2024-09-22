@@ -47,6 +47,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'jobPlatform',
     'django_filters',
+    'cloudinary',
+    'cloudinary_storage',
+
     
 
 ]
@@ -184,3 +187,6 @@ cloudinary.config(
     api_key='798278373751285',
     api_secret='-FS_NRNlGTylyBoGr8yZaI7lN9M',
 )
+
+
+GEMINI_API_KEY='AIzaSyDHlaH_BLjVfTy-zDD6FAeJGEasRvAh9iU'
