@@ -1,7 +1,6 @@
 {% extends 'base2.html' %}
 {% block content %}
 {% load static %}
-{% load cloudinary %}
 <style>
     img {
         height: 25%;
@@ -103,7 +102,7 @@
                         <div class="section-tittle d-flex align-items-center justify-content-start">
                             <!-- Logo -->
                             <div class="mr-3">
-                                <p>{{ provider.company_logo }}</p>
+                                <img src="{{ provider.company_logo.url }}" style="border-color: #333;" alt="Company Logo" class="company-logo" />
                             </div>
                             <!-- Text -->
                             <div class="text-left">

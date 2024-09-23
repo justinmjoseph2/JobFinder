@@ -168,11 +168,15 @@ from .models import Provider
 
 User = get_user_model()
 
-# views.py
-
 from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from cloudinary.uploader import upload  # Import Cloudinary upload function
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from .models import Provider
+
+User = get_user_model()
 
 def register_provider(request):
     if request.method == 'POST':
@@ -188,30 +192,40 @@ def register_provider(request):
             messages.error(request, 'Passwords Do Not Match!')
             return render(request, 'customer/register_provider.html')
 
-        # Password validation and user creation logic ...
-
-        # Upload the company logo to Cloudinary
+        # Check password strength using Django's built-in validators
         try:
-            upload_result = upload(company_logo)  # Upload the image to Cloudinary
-            logo_url = upload_result.get('secure_url')  # Get the URL of the uploaded image
-        except Exception as e:
-            messages.error(request, f'Failed to upload image: {e}')
+            validate_password(password)
+        except ValidationError as e:
+            messages.error(request, ', '.join(e.messages))
             return render(request, 'customer/register_provider.html')
 
-        # Save provider with the Cloudinary URL
-        provider = Provider.objects.create(
-            user=User, 
-            provider_name=provider_name, 
-            company_name=company_name, 
-            email=email, 
-            company_logo=logo_url  # Save the Cloudinary URL instead of the file object
-        )
+        # Check if email already exists
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'Email already exists!')
+            return render(request, 'customer/register_provider.html')
 
-        # User authentication and login logic ...
+        # Create user
+        try:
+            user = User.objects.create_user(username=email, email=email, password=password)
+        except:
+            messages.error(request, 'Failed to create user.')
+            return render(request, 'customer/register_provider.html')
 
-        return redirect('provider_index')
+        # Create provider
+        provider = Provider.objects.create(user=user, provider_name=provider_name, company_name=company_name, email=email, company_logo=company_logo)
+
+        # Authenticate and login user
+        user = authenticate(request, username=email, password=password)
+        if user is not None:
+            login(request, user)
+            messages.success(request, 'Your Account Has Been Registered Successfully!')
+            return redirect('provider_index')
+        else:
+            messages.error(request, 'Failed to login user.')
+            return render(request, 'customer/register_provider.html')
 
     return render(request, 'customer/register_provider.html')
+
 
 
 
@@ -454,14 +468,19 @@ def elements(request):
 def contact(request):
     return render(request, 'contact.html')
 
-# views.py
 
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from .models import Provider
+
+
+
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 from .models import Provider
 from .forms import ProviderForm
-from cloudinary import uploader
 
 @login_required
 def edit_provider(request):
@@ -474,32 +493,15 @@ def edit_provider(request):
     if request.method == 'POST':
         form = ProviderForm(request.POST, request.FILES, instance=provider)
         if form.is_valid():
-            # Handle file upload to Cloudinary
-            if request.FILES.get('company_logo'):
-                company_logo = request.FILES['company_logo']
-                upload_result = uploader.upload(company_logo)
-                # Save the URL to the model
-                provider.company_logo = upload_result['secure_url']
-            
-            # Update the provider instance with other form data
-            provider.provider_name = form.cleaned_data['provider_name']
-            provider.company_name = form.cleaned_data['company_name']
-            provider.save()  # Save the provider instance
-
-            # Update user email and username
-            current_user.email = form.cleaned_data.get('email', current_user.email)
-            current_user.username = form.cleaned_data.get('email', current_user.email)
+            form.save()
+            current_user.email = form.cleaned_data['email']
+            current_user.username = form.cleaned_data['email']
             current_user.save()
-
             return redirect('provider/index')
-        else:
-            print(form.errors)  # Debugging: Print form errors if the form is not valid
-
     else:
-        form = ProviderForm(instance=provider, user=current_user)
+        form = ProviderForm(instance=provider)
 
     return render(request, 'provider/details.html', {'form': form})
-
 
 
 from django.shortcuts import render, redirect
@@ -2237,20 +2239,3 @@ def upload_to_gemini(file_url, mime_type, api_key):
         raise Exception(f"Failed to upload: {response.status_code} - {response.text}")
 
     return response.json()
-
-
-
-
-
-
-
-# views.py
-from django.http import HttpResponse
-import cloudinary.uploader
-
-def test_cloudinary(request):
-    try:
-        response = cloudinary.uploader.upload("https://via.placeholder.com/150")  # Test with a sample image URL
-        return HttpResponse(f"Uploaded: {response['url']}")
-    except Exception as e:
-        return HttpResponse(f"Error: {e}")
