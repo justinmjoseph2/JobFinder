@@ -200,7 +200,7 @@ def register_provider(request):
 
         # Save provider with the Cloudinary URL
         provider = Provider.objects.create(
-            user=user, 
+            user=User, 
             provider_name=provider_name, 
             company_name=company_name, 
             email=email, 
@@ -461,6 +461,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from .models import Provider
 from .forms import ProviderForm
+from cloudinary import uploader
 
 @login_required
 def edit_provider(request):
@@ -473,11 +474,23 @@ def edit_provider(request):
     if request.method == 'POST':
         form = ProviderForm(request.POST, request.FILES, instance=provider)
         if form.is_valid():
-            form.instance.user = current_user
-            form.save()
+            # Handle file upload to Cloudinary
+            if request.FILES.get('company_logo'):
+                company_logo = request.FILES['company_logo']
+                upload_result = uploader.upload(company_logo)
+                # Save the URL to the model
+                provider.company_logo = upload_result['secure_url']
+            
+            # Update the provider instance with other form data
+            provider.provider_name = form.cleaned_data['provider_name']
+            provider.company_name = form.cleaned_data['company_name']
+            provider.save()  # Save the provider instance
+
+            # Update user email and username
             current_user.email = form.cleaned_data.get('email', current_user.email)
             current_user.username = form.cleaned_data.get('email', current_user.email)
             current_user.save()
+
             return redirect('provider/index')
         else:
             print(form.errors)  # Debugging: Print form errors if the form is not valid

@@ -174,6 +174,8 @@ MEDIA_URL = '/resumes/'
 
 # settings.py
 import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 import cloudinary_storage
 
 # Cloudinary settings
@@ -196,3 +198,6 @@ cloudinary.config(
 )
 
 GEMINI_API_KEY='AIzaSyDHlaH_BLjVfTy-zDD6FAeJGEasRvAh9iU'
+
+
+
