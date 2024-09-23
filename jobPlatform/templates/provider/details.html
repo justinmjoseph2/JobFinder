@@ -40,7 +40,8 @@
                             {% if form.instance.company_logo %}
                                 <div class="form-group mb-3">
                                     <label>Current Logo:</label><br>
-                                    <img src="{{ form.instance.company_logo.url }}" alt="Company Logo" style="max-height: 150px;">
+                                    <img src="{{ form.instance.company_logo }}" alt="Company Logo" style="max-height: 150px;">
+                                    <p>{{ form.instance.company_logo }}</p>
                                 </div>
                             {% endif %}
 

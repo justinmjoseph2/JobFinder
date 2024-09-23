@@ -178,6 +178,15 @@ from .models import Provider
 
 User = get_user_model()
 
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from cloudinary.uploader import upload
+from cloudinary.utils import cloudinary_url
+from .models import Provider, User  # Ensure these imports are correctly referencing your models
+
 def register_provider(request):
     if request.method == 'POST':
         provider_name = request.POST.get('provider_name')
@@ -207,12 +216,31 @@ def register_provider(request):
         # Create user
         try:
             user = User.objects.create_user(username=email, email=email, password=password)
-        except:
-            messages.error(request, 'Failed to create user.')
+        except Exception as e:
+            messages.error(request, f'Failed to create user: {str(e)}')
             return render(request, 'customer/register_provider.html')
 
-        # Create provider
-        provider = Provider.objects.create(user=user, provider_name=provider_name, company_name=company_name, email=email, company_logo=company_logo)
+        # Upload image to Cloudinary and get the complete URL
+        if company_logo:
+            try:
+                # Upload image to Cloudinary
+                upload_result = upload(company_logo, folder="resumes/Company/")
+                # Extract the URL of the uploaded image
+                company_logo_url = upload_result.get('url')
+            except Exception as e:
+                messages.error(request, f'Failed to upload image: {str(e)}')
+                return render(request, 'customer/register_provider.html')
+        else:
+            company_logo_url = None
+
+        # Create provider and save the image URL
+        provider = Provider.objects.create(
+            user=user,
+            provider_name=provider_name,
+            company_name=company_name,
+            email=email,
+            company_logo=company_logo_url  # Save the complete URL
+        )
 
         # Authenticate and login user
         user = authenticate(request, username=email, password=password)
@@ -479,6 +507,7 @@ from .models import Provider
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+from cloudinary.uploader import upload
 from .models import Provider
 from .forms import ProviderForm
 
@@ -493,11 +522,24 @@ def edit_provider(request):
     if request.method == 'POST':
         form = ProviderForm(request.POST, request.FILES, instance=provider)
         if form.is_valid():
+            # Check if an image file is uploaded
+            company_logo = request.FILES.get('company_logo')
+            if company_logo:
+                try:
+                    # Upload image to Cloudinary and get the URL
+                    upload_result = upload(company_logo, folder="resumes/Company/")
+                    company_logo_url = upload_result.get('url')
+                    # Update the provider's company_logo field with the new URL
+                    provider.company_logo = company_logo_url
+                except Exception as e:
+                    return HttpResponse(f"Failed to upload image: {str(e)}")
+
+            # Save form data and update the user's email and username
             form.save()
             current_user.email = form.cleaned_data['email']
             current_user.username = form.cleaned_data['email']
             current_user.save()
-            return redirect('provider/index')
+            return redirect('provider_index')
     else:
         form = ProviderForm(instance=provider)
 
