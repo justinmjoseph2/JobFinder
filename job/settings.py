@@ -171,33 +171,22 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'resumes/')
 # The URL that serves media files
 MEDIA_URL = '/resumes/'
 
-
-# settings.py
 import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 import cloudinary_storage
 
-# Cloudinary settings
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dxm5scbpw',  # Replace with your actual Cloudinary cloud name
-    'API_KEY': '798278373751285',  # Replace with your actual Cloudinary API key
-    'API_SECRET': '-FS_NRNlGTylyBoGr8yZaI7lN9M',  # Replace with your actual Cloudinary API secret
+    'CLOUD_NAME': 'dxm5scbpw',
+    'API_KEY': '798278373751285',
+    'API_SECRET': '-FS_NRNlGTylyBoGr8yZaI7lN9M',
 }
 
-# Configure the default file storage to use Cloudinary
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# Cloudinary configuration
 cloudinary.config(
     cloud_name='dxm5scbpw',
     api_key='798278373751285',
     api_secret='-FS_NRNlGTylyBoGr8yZaI7lN9M',
-    secure = True
-
 )
 
+
 GEMINI_API_KEY='AIzaSyDHlaH_BLjVfTy-zDD6FAeJGEasRvAh9iU'
-
-
-
