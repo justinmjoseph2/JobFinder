@@ -92,10 +92,10 @@ WSGI_APPLICATION = 'job.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'jobfinder',
-        'USER': 'jobfinder_user',
-        'PASSWORD': '7fePyLGuTe0PYdMypjDZzN3zSgZtShm3',
-        'HOST': 'dpg-crohsgij1k6c739hrscg-a.oregon-postgres.render.com',
+        'NAME': 'jobfinder_avjo',
+        'USER': 'jobfinder_avjo_user',
+        'PASSWORD': 'ykROVJerq3xl8wmVK5Yl1HD8LmX4abz3',
+        'HOST': 'dpg-cronbgqj1k6c739kt53g-a.oregon-postgres.render.com',
         'PORT': '5432',  # Default PostgreSQL port
     }
 }
