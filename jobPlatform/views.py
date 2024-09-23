@@ -496,11 +496,9 @@ def elements(request):
 def contact(request):
     return render(request, 'contact.html')
 
-
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from cloudinary.uploader import upload
 from .models import Provider
 from .forms import ProviderForm
 
@@ -508,37 +506,23 @@ from .forms import ProviderForm
 def edit_provider(request):
     current_user = request.user
     try:
-        # Fetch the provider associated with the logged-in user
         provider = Provider.objects.get(user=current_user)
     except Provider.DoesNotExist:
         return HttpResponse("You are not associated with any provider profile.")
 
     if request.method == 'POST':
-        form = ProviderForm(request.POST, request.FILES, instance=provider, user=current_user)
+        form = ProviderForm(request.POST, request.FILES, instance=provider)
         if form.is_valid():
-            # Check if an image file is uploaded
-            company_logo = request.FILES.get('company_logo')
-            if company_logo:
-                try:
-                    # Upload image to Cloudinary and get the URL
-                    upload_result = upload(company_logo, folder="resumes/Company/")
-                    company_logo_url = upload_result.get('url')
-                    # Update the provider's company_logo field with the new URL
-                    provider.company_logo = company_logo_url
-                except Exception as e:
-                    return HttpResponse(f"Failed to upload image: {str(e)}")
-
-            # Save form data and update the user's email and username
             form.save()
-            current_user.email = form.cleaned_data['email']
-            current_user.username = form.cleaned_data['email']
+            current_user.email = form.cleaned_data.get('email', current_user.email)
+            current_user.username = form.cleaned_data.get('email', current_user.email)
             current_user.save()
-            return redirect('provider_index')
+            return redirect('provider/index')
     else:
-        # Pass the current user to the form initialization
         form = ProviderForm(instance=provider, user=current_user)
 
     return render(request, 'provider/details.html', {'form': form})
+
 
 
 from django.shortcuts import render, redirect

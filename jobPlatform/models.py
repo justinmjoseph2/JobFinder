@@ -14,14 +14,16 @@ class JobCategory(models.Model):
         return self.name
 
 from cloudinary.models import CloudinaryField
+from django.db import models
+from django.contrib.auth.models import User
+from cloudinary.models import CloudinaryField
 
 class Provider(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     provider_name = models.CharField(max_length=255)
     company_name = models.CharField(max_length=255)
     email = models.EmailField()
-    company_logo = CloudinaryField('image', folder='Company/')
-    created_on = models.DateTimeField(auto_now_add=True)
+    company_logo = CloudinaryField('image')  
 
     def __str__(self):
         return self.provider_name
