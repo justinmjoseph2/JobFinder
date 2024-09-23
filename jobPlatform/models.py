@@ -20,7 +20,7 @@ class Provider(models.Model):
     provider_name = models.CharField(max_length=255)
     company_name = models.CharField(max_length=255)
     email = models.EmailField()
-    company_logo = models.ImageField(upload_to='Company/')
+    company_logo = CloudinaryField('image', folder='Company/')
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
