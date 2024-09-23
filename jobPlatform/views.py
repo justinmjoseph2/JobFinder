@@ -2239,3 +2239,20 @@ def upload_to_gemini(file_url, mime_type, api_key):
         raise Exception(f"Failed to upload: {response.status_code} - {response.text}")
 
     return response.json()
+
+
+
+
+
+
+
+# views.py
+from django.http import HttpResponse
+import cloudinary.uploader
+
+def test_cloudinary(request):
+    try:
+        response = cloudinary.uploader.upload("https://via.placeholder.com/150")  # Test with a sample image URL
+        return HttpResponse(f"Uploaded: {response['url']}")
+    except Exception as e:
+        return HttpResponse(f"Error: {e}")
