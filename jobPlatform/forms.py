@@ -26,21 +26,33 @@ class ProviderForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop('user', None)  # Get the user object passed from the view
         super().__init__(*args, **kwargs)
-        # Add email field manually
-        self.fields['email'] = forms.EmailField(initial=self.user.email, disabled=True)
+
+        # Add email field manually, only if self.user is valid and has an email attribute
+        if self.user and hasattr(self.user, 'email'):
+            self.fields['email'] = forms.EmailField(initial=self.user.email, disabled=True)
+        else:
+            # Set a default value or message if user is not passed correctly
+            self.fields['email'] = forms.EmailField(
+                initial="No email available", disabled=True
+            )
 
     def clean_email(self):
         # Skip validation for email since it's not editable
-        return self.user.email
+        if self.user and hasattr(self.user, 'email'):
+            return self.user.email
+        return "No email available"  # Provide a default or placeholder value if no user
 
     def save(self, commit=True):
         instance = super().save(commit=False)
-        instance.email = self.user.email  # Ensure the email stays the same
+        # Ensure the instance keeps the user's email if user exists
+        if self.user and hasattr(self.user, 'email'):
+            instance.email = self.user.email
         if commit:
             instance.save()
         return instance
+
 
 
 

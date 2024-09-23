@@ -500,13 +500,6 @@ def contact(request):
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from .models import Provider
-
-
-
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
 from cloudinary.uploader import upload
 from .models import Provider
 from .forms import ProviderForm
@@ -515,12 +508,13 @@ from .forms import ProviderForm
 def edit_provider(request):
     current_user = request.user
     try:
+        # Fetch the provider associated with the logged-in user
         provider = Provider.objects.get(user=current_user)
     except Provider.DoesNotExist:
         return HttpResponse("You are not associated with any provider profile.")
 
     if request.method == 'POST':
-        form = ProviderForm(request.POST, request.FILES, instance=provider)
+        form = ProviderForm(request.POST, request.FILES, instance=provider, user=current_user)
         if form.is_valid():
             # Check if an image file is uploaded
             company_logo = request.FILES.get('company_logo')
@@ -541,7 +535,8 @@ def edit_provider(request):
             current_user.save()
             return redirect('provider_index')
     else:
-        form = ProviderForm(instance=provider)
+        # Pass the current user to the form initialization
+        form = ProviderForm(instance=provider, user=current_user)
 
     return render(request, 'provider/details.html', {'form': form})
 
