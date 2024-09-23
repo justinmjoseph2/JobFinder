@@ -92,13 +92,14 @@ WSGI_APPLICATION = 'job.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'not_6c84',
-        'USER': 'not_6c84_user',
-        'PASSWORD': 'lYahQF5cfyGTpzCHsADO84tJH1qrEbuv',
-        'HOST': 'dpg-crfan5lds78s73cjptog-a.oregon-postgres.render.com',
+        'NAME': 'jobfinder',
+        'USER': 'jobfinder_user',
+        'PASSWORD': '7fePyLGuTe0PYdMypjDZzN3zSgZtShm3',
+        'HOST': 'dpg-crohsgij1k6c739hrscg-a.oregon-postgres.render.com',
         'PORT': '5432',  # Default PostgreSQL port
     }
 }
+
 
 
 GEMINI_API_KEY="AIzaSyDHlaH_BLjVfTy-zDD6FAeJGEasRvAh9iU"
