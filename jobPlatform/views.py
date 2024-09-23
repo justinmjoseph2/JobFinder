@@ -168,15 +168,7 @@ from .models import Provider
 
 User = get_user_model()
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-from django.contrib.auth import get_user_model
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError
-from .models import Provider
-
-User = get_user_model()
+from cloudinary import uploader
 
 def register_provider(request):
     if request.method == 'POST':
@@ -207,12 +199,25 @@ def register_provider(request):
         # Create user
         try:
             user = User.objects.create_user(username=email, email=email, password=password)
-        except:
+        except Exception as e:
             messages.error(request, 'Failed to create user.')
             return render(request, 'customer/register_provider.html')
 
+        # Upload the company logo to Cloudinary
+        if company_logo:
+            upload_result = uploader.upload(company_logo)
+            company_logo_url = upload_result['secure_url']
+        else:
+            company_logo_url = None  # Handle this as needed
+
         # Create provider
-        provider = Provider.objects.create(user=user, provider_name=provider_name, company_name=company_name, email=email, company_logo=company_logo)
+        provider = Provider.objects.create(
+            user=user,
+            provider_name=provider_name,
+            company_name=company_name,
+            email=email,
+            company_logo=company_logo_url
+        )
 
         # Authenticate and login user
         user = authenticate(request, username=email, password=password)
@@ -225,8 +230,6 @@ def register_provider(request):
             return render(request, 'customer/register_provider.html')
 
     return render(request, 'customer/register_provider.html')
-
-
 
 
 def login_provider(request):

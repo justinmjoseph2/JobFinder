@@ -188,5 +188,4 @@ cloudinary.config(
     api_secret='-FS_NRNlGTylyBoGr8yZaI7lN9M',
 )
 
-
 GEMINI_API_KEY='AIzaSyDHlaH_BLjVfTy-zDD6FAeJGEasRvAh9iU'
