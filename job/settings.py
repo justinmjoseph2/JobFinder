@@ -170,7 +170,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'resumes/')
 # The URL that serves media files
 MEDIA_URL = '/resumes/'
 
-# settings.py
 import cloudinary
 import cloudinary_storage
 
