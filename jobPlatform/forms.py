@@ -13,45 +13,27 @@ class ContactForm(forms.ModelForm):
         }
 
 
+# forms.py
+
 from django import forms
 from .models import Provider
 
 class ProviderForm(forms.ModelForm):
     class Meta:
         model = Provider
-        fields = ['provider_name', 'company_name', 'company_logo']  # Email is excluded
-        widgets = {
-            'provider_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'company_name': forms.TextInput(attrs={'class': 'form-control'}),
-        }
+        fields = ['provider_name', 'company_name', 'company_logo']
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)  # Get the user object passed from the view
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-
-        # Add email field manually, only if self.user is valid and has an email attribute
-        if self.user and hasattr(self.user, 'email'):
-            self.fields['email'] = forms.EmailField(initial=self.user.email, disabled=True)
-        else:
-            # Set a default value or message if user is not passed correctly
-            self.fields['email'] = forms.EmailField(
-                initial="No email available", disabled=True
-            )
+        self.fields['email'] = forms.EmailField(
+            initial=self.user.email if self.user else '',
+            disabled=True,
+            required=False
+        )
 
     def clean_email(self):
-        # Skip validation for email since it's not editable
-        if self.user and hasattr(self.user, 'email'):
-            return self.user.email
-        return "No email available"  # Provide a default or placeholder value if no user
-
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        # Ensure the instance keeps the user's email if user exists
-        if self.user and hasattr(self.user, 'email'):
-            instance.email = self.user.email
-        if commit:
-            instance.save()
-        return instance
+        return self.user.email if self.user else ''
 
 
 

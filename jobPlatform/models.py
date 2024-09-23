@@ -13,7 +13,7 @@ class JobCategory(models.Model):
     def __str__(self):
         return self.name
 
-from cloudinary.models import CloudinaryField
+
 from django.db import models
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
@@ -27,6 +27,7 @@ class Provider(models.Model):
 
     def __str__(self):
         return self.provider_name
+
 
 
 # Create your models here.
