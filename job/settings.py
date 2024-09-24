@@ -168,6 +168,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'resumes/')
 
+GEMINI_API_KEY='AIzaSyDHlaH_BLjVfTy-zDD6FAeJGEasRvAh9iU'
+
+
 # The URL that serves media files
 MEDIA_URL = '/resumes/'
 
@@ -188,4 +191,24 @@ cloudinary.config(
     api_secret='-FS_NRNlGTylyBoGr8yZaI7lN9M',
 )
 
-GEMINI_API_KEY='AIzaSyDHlaH_BLjVfTy-zDD6FAeJGEasRvAh9iU'
+
+# settings.py
+
+import cloudinary
+import cloudinary_storage
+
+# Cloudinary configuration
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dxm5scbpw',  # Your Cloudinary cloud name
+    'API_KEY': '798278373751285',  # Your Cloudinary API key
+    'API_SECRET': '-FS_NRNlGTylyBoGr8yZaI7lN9M',  # Your Cloudinary API secret
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+cloudinary.config(
+    cloud_name='dxm5scbpw',
+    api_key='798278373751285',
+    api_secret='-FS_NRNlGTylyBoGr8yZaI7lN9M',
+)
+

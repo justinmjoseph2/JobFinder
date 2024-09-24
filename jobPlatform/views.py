@@ -31,7 +31,7 @@ import pydotplus
 from graphviz import Digraph
 import pathlib
 import textwrap
-from .forms import ContactForm, CustomPasswordChangeForm
+from .forms import ContactForm, CustomPasswordChangeForm, ProviderForm
 
 
 import google.generativeai as genai
@@ -158,77 +158,62 @@ def login_customer(request):
     return render(request, 'customer/login_customer.html')
 
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from django.contrib.auth import get_user_model
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 from .models import Provider
-
-User = get_user_model()
-
 from cloudinary import uploader
+import cloudinary
 
 def register_provider(request):
+    # Ensure Cloudinary is configured here if not done in settings.py
+    cloudinary.config(
+        cloud_name='dxm5scbpw',
+        api_key='798278373751285',
+        api_secret='-FS_NRNlGTylyBoGr8yZaI7lN9M',
+    )
+
     if request.method == 'POST':
-        provider_name = request.POST.get('provider_name')
         company_name = request.POST.get('company_name')
+        provider_name = request.POST.get('provider_name')
         email = request.POST.get('your-email')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm-password')
         company_logo = request.FILES.get('image_upload')
 
-        # Check if passwords match
         if password != confirm_password:
-            messages.error(request, 'Passwords Do Not Match!')
-            return render(request, 'customer/register_provider.html')
+            messages.error(request, "Passwords do not match.")
+            return redirect('register_provider')
 
-        # Check password strength using Django's built-in validators
         try:
-            validate_password(password)
-        except ValidationError as e:
-            messages.error(request, ', '.join(e.messages))
-            return render(request, 'customer/register_provider.html')
+            # Create a new User
+            user = User.objects.create_user(
+                username=email,  # Use email as the username
+                email=email,
+                password=password
+            )
+            user.save()
 
-        # Check if email already exists
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'Email already exists!')
-            return render(request, 'customer/register_provider.html')
-
-        # Create user
-        try:
-            user = User.objects.create_user(username=email, email=email, password=password)
-        except Exception as e:
-            messages.error(request, 'Failed to create user.')
-            return render(request, 'customer/register_provider.html')
-
-        # Upload the company logo to Cloudinary
-        if company_logo:
+            # Upload the image to Cloudinary
             upload_result = uploader.upload(company_logo)
-            company_logo_url = upload_result['secure_url']
-        else:
-            company_logo_url = None  # Handle this as needed
 
-        # Create provider
-        provider = Provider.objects.create(
-            user=user,
-            provider_name=provider_name,
-            company_name=company_name,
-            email=email,
-            company_logo=company_logo_url
-        )
+            # Create a new Provider
+            provider = Provider.objects.create(
+                user=user,  # Associate the new User with the Provider
+                company_name=company_name,
+                provider_name=provider_name,
+                email=email,
+                company_logo=upload_result['url']
+            )
 
-        # Authenticate and login user
-        user = authenticate(request, username=email, password=password)
-        if user is not None:
-            login(request, user)
-            messages.success(request, 'Your Account Has Been Registered Successfully!')
-            return redirect('provider_index')
-        else:
-            messages.error(request, 'Failed to login user.')
-            return render(request, 'customer/register_provider.html')
+            messages.success(request, "Provider registered successfully.")
+            return redirect('login_provider')  # Redirect to a success page
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
+            return redirect('register_provider')
 
     return render(request, 'customer/register_provider.html')
+
+
 
 
 def login_provider(request):
@@ -475,13 +460,6 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from .models import Provider
-
-
-
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
-from .models import Provider
 from .forms import ProviderForm
 
 @login_required
@@ -504,7 +482,6 @@ def edit_provider(request):
         form = ProviderForm(instance=provider)
 
     return render(request, 'provider/details.html', {'form': form})
-
 
 from django.shortcuts import render, redirect
 from .forms import JobForm
@@ -674,7 +651,7 @@ from .forms import JobForm  # Assuming you have a form for the Job model
 @login_required
 def manage_jobs(request):
     # Get the logged-in employer
-    employer = request.user.provider  # Assuming the user model is linked to a Provider model
+    employer = request.user.provider  
 
     # Fetch jobs posted by the logged-in employer
     jobs = Job.objects.filter(provider=employer)

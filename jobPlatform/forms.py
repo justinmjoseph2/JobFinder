@@ -13,8 +13,6 @@ class ContactForm(forms.ModelForm):
         }
 
 
-# forms.py
-
 from django import forms
 from .models import Provider
 
@@ -34,8 +32,6 @@ class ProviderForm(forms.ModelForm):
 
     def clean_email(self):
         return self.user.email if self.user else ''
-
-
 
 
 from django import forms
