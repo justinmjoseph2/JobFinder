@@ -27,8 +27,8 @@
                         <td>{{ application.user.customer.contact_number }}</td>
                         <td>{{ application.user.customer.email }}</td>
                         <td>
-                            <a class="btn btn-primary btn-sm" href="{{ application.resume.uploaded_file.url }}" download>
-                                <i class="fa fa-download"></i>
+                            <a class="btn btn-primary btn-sm" href="{{ application.modified_resume_url }}">
+                                <i class="fa fa-eye"></i>
                             </a>
                         </td>
                         <td>{{ application.created_at|date:"d M Y" }}</td>

@@ -40,7 +40,7 @@
                         
                         <!-- Resume Download Button -->
                         <div class="col-md-3 d-flex align-items-center justify-content-center">
-                            <a href="{{ application.resume.uploaded_file.url }}" target="_blank" class="btn btn-sm btn-info">View Resume</a>
+                            <a href="{{ application.resume.uploaded_file.url|cut:'upload/' }}upload/f_auto,q_auto/{{ application.resume.uploaded_file.url|split:'upload/'|last }}" target="_blank" class="btn btn-sm btn-info">View Resume</a>
                         </div>
                         
                         <!-- Status Dropdown -->

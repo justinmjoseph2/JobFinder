@@ -908,10 +908,20 @@ def provider_applications(request):
     provider = request.user.provider  # Fetch the provider instance based on logged-in user
     applications = JobApplication.objects.filter(provider=provider)  # Get all applications for jobs posted by the provider
     
+    # Modify the resume URLs to insert `f_auto,q_auto/`
+    for application in applications:
+        if application.resume and application.resume.uploaded_file.url:
+            url = application.resume.uploaded_file.url
+            if 'upload/' in url:
+                split_url = url.split('upload/')
+                modified_url = split_url[0] + 'upload/f_auto,q_auto/' + split_url[1]
+                application.modified_resume_url = modified_url  # Add modified URL to the application object
+
     context = {
         'applications': applications
     }
     return render(request, 'provider/applications.html', context)
+
 
 from django.shortcuts import render, redirect
 from .models import JobApplication
@@ -974,13 +984,22 @@ def applications_page(request):
     return render(request, 'provider/applications_page.html', context)
 
 
-from django.shortcuts import render
-from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 from .models import JobApplication
+
 @login_required
 def new_applications(request):
     # Query for applications with status 'pending' for the current user
     applications = JobApplication.objects.filter(status='pending', job__provider=request.user.provider)
+    
+    # Modify the resume URLs to insert `f_auto,q_auto/`
+    for application in applications:
+        if application.resume and application.resume.uploaded_file.url:
+            url = application.resume.uploaded_file.url
+            if 'upload/' in url:
+                split_url = url.split('upload/')
+                modified_url = split_url[0] + 'upload/f_auto,q_auto/' + split_url[1]
+                application.modified_resume_url = modified_url  # Add modified URL to the application object
     
     # Pass the applications to the template
     return render(request, 'provider/new_applications.html', {'applications': applications})
@@ -990,22 +1009,53 @@ def shortlisted_applications(request):
     # Logic for shortlisted applications
     applications = JobApplication.objects.filter(status='short-list', job__provider=request.user.provider)
     
+    # Modify the resume URLs to insert `f_auto,q_auto/`
+    for application in applications:
+        if application.resume and application.resume.uploaded_file.url:
+            url = application.resume.uploaded_file.url
+            if 'upload/' in url:
+                split_url = url.split('upload/')
+                modified_url = split_url[0] + 'upload/f_auto,q_auto/' + split_url[1]
+                application.modified_resume_url = modified_url
+    
     # Pass the applications to the template
     return render(request, 'provider/shortlisted_applications.html', {'applications': applications})
+
+
 @login_required
 def hired_applications(request):
     # Logic for hired applications
     applications = JobApplication.objects.filter(status='hire', job__provider=request.user.provider)
     
+    # Modify the resume URLs to insert `f_auto,q_auto/`
+    for application in applications:
+        if application.resume and application.resume.uploaded_file.url:
+            url = application.resume.uploaded_file.url
+            if 'upload/' in url:
+                split_url = url.split('upload/')
+                modified_url = split_url[0] + 'upload/f_auto,q_auto/' + split_url[1]
+                application.modified_resume_url = modified_url
+    
     # Pass the applications to the template
     return render(request, 'provider/hired_applications.html', {'applications': applications})
+
 @login_required
 def rejected_applications(request):
-    # Logic for hired applications
+    # Logic for rejected applications
     applications = JobApplication.objects.filter(status='reject', job__provider=request.user.provider)
+    
+    # Modify the resume URLs to insert `f_auto,q_auto/`
+    for application in applications:
+        if application.resume and application.resume.uploaded_file.url:
+            url = application.resume.uploaded_file.url
+            if 'upload/' in url:
+                split_url = url.split('upload/')
+                modified_url = split_url[0] + 'upload/f_auto,q_auto/' + split_url[1]
+                application.modified_resume_url = modified_url
     
     # Pass the applications to the template
     return render(request, 'provider/rejected_applications.html', {'applications': applications})
+
 
 from django.shortcuts import render, get_object_or_404
 from .models import JobApplication
@@ -2142,14 +2192,7 @@ def analyze_resume(request):
                     result.append({'title': '', 'description': cleaned_line.strip()})
             return result
 
-        # Save the resume after processing
-        existing_resume = ResumeUpload.objects.filter(user=request.user).first()
-        if existing_resume:
-            existing_resume.delete()
-
-        # Reset the file pointer again before saving to ensure proper upload
-        resume.seek(0)
-
+        # Save the new resume without deleting the existing one
         new_resume = ResumeUpload.objects.create(
             user=request.user,
             uploaded_file=resume
@@ -2163,7 +2206,6 @@ def analyze_resume(request):
         return render(request, 'analyze_resume.html', context)
 
     return render(request, 'upload_resume.html')
-
 
 
 
