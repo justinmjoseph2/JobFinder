@@ -24,6 +24,8 @@ class Provider(models.Model):
     company_name = models.CharField(max_length=255)
     email = models.EmailField()
     company_logo = CloudinaryField('image')  
+    created_on = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return self.provider_name
@@ -109,15 +111,22 @@ class JobApplication(models.Model):
         return f"Application for {self.job.title} by {self.user.username}"
 
 
+from django.db import models
+from django.contrib.auth.models import User  # Import the User model
+
 class Admin(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
-    username = models.CharField(max_length=100)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    username = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)
+
     def __str__(self):
-        return self.admin_name
+        return self.username
+
+
+
     
 
 from django.db import models

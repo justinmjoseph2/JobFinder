@@ -1,0 +1,53 @@
+<!-- add_admin.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Add New Admin</h2>
+    <form method="POST" class="mt-4 p-4 border rounded shadow-sm bg-light">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="id_username" class="form-label">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <div class="text-danger">{{ form.username.errors.0 }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <label for="id_name" class="form-label">Name</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+                <div class="text-danger">{{ form.name.errors.0 }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <label for="id_phone" class="form-label">Phone</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}
+                <div class="text-danger">{{ form.phone.errors.0 }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <label for="id_email" class="form-label">Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="text-danger">{{ form.email.errors.0 }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <label for="id_password" class="form-label">Password</label>
+            {{ form.password }}
+            {% if form.password.errors %}
+                <div class="text-danger">{{ form.password.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add Admin</button>
+    </form>
+</div>
+{% endblock %}

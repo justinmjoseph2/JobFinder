@@ -64,6 +64,7 @@ urlpatterns = [
 
     #Admin
     path('admin-login/', views.custom_admin_login, name='admin_login'),
+    path('add-admin/', views.add_admin, name='add_admin'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('form/', views.form, name='form'),
     path('edit-admin-details/', views.edit_admin_details, name='edit_admin_details'),

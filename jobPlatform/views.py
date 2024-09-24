@@ -214,8 +214,6 @@ def register_provider(request):
     return render(request, 'customer/register_provider.html')
 
 
-
-
 def login_provider(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -2218,3 +2216,46 @@ def upload_to_gemini(file_url, mime_type, api_key):
         raise Exception(f"Failed to upload: {response.status_code} - {response.text}")
 
     return response.json()
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password  # Import to hash passwords
+from .forms import AdminForm
+from .models import Admin
+
+def add_admin(request):
+    if request.method == 'POST':
+        form = AdminForm(request.POST)
+        if form.is_valid():
+            # Extract the necessary information from the form
+            username = form.cleaned_data['username']
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']  # Password will be hashed
+            name = form.cleaned_data['name']
+            
+            # Create a User object
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password
+            )
+            user.first_name = name  # Optionally set the first name or any other fields
+            user.save()
+
+            # Create the Admin object and link it to the User
+            admin = Admin.objects.create(
+                user=user,
+                username=username,
+                name=name,
+                email=email,
+                password=make_password(password)  # Hash the password here
+            )
+
+            return redirect('admin_login')
+    else:
+        form = AdminForm()
+
+    return render(request, 'add_admin.html', {'form': form})
+

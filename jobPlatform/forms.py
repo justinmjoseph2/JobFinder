@@ -24,6 +24,13 @@ class ProviderForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+
+        # Add CSS classes for styling the fields
+        self.fields['provider_name'].widget.attrs.update({'class': 'form-control'})
+        self.fields['company_name'].widget.attrs.update({'class': 'form-control'})
+        self.fields['company_logo'].widget.attrs.update({'class': 'form-control-file'})
+
+        # Keeping the email field as it is
         self.fields['email'] = forms.EmailField(
             initial=self.user.email if self.user else '',
             disabled=True,
@@ -32,6 +39,7 @@ class ProviderForm(forms.ModelForm):
 
     def clean_email(self):
         return self.user.email if self.user else ''
+
 
 
 from django import forms
@@ -84,7 +92,7 @@ class JobForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Job Title'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Job Description'}),
-            'salary': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Salary'}),
+            'salary': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Salary (LPA)'}),
             'vacancies': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Number of Vacancies'}),
             'link': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Application Link'}),
             'location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Job Location'}),
@@ -499,3 +507,32 @@ class ResetPasswordFormAdmin(forms.Form):
     )
 
 
+# forms.py
+from django import forms
+from .models import Admin
+
+class AdminForm(forms.ModelForm):
+    class Meta:
+        model = Admin
+        fields = ['username', 'name', 'phone', 'email', 'password']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add classes directly to each form field widget
+        self.fields['username'].widget.attrs.update({'class': 'form-control'})
+        self.fields['name'].widget.attrs.update({'class': 'form-control'})
+        self.fields['phone'].widget.attrs.update({'class': 'form-control'})
+        self.fields['email'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password'].widget.attrs.update({'class': 'form-control'})
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if Admin.objects.filter(email=email).exists():
+            raise forms.ValidationError("This email is already taken.")
+        return email
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if Admin.objects.filter(username=username).exists():
+            raise forms.ValidationError("This username is already taken.")
+        return username
