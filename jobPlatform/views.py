@@ -601,7 +601,6 @@ def wait_for_files_active(files):
             raise Exception(f"File {file.name} failed to process")
 
 
-# decorators.py
 
 from django.shortcuts import redirect
 from functools import wraps
@@ -616,11 +615,6 @@ def login_required_custom(view_func):
 
 
 
-
-
-
-# views.py
-# views.py
 from django.shortcuts import render
 from .models import Job
 
@@ -700,38 +694,55 @@ def delete_job(request, job_id):
 
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import JobApplication, Job, ResumeUpload
-@login_required
-def handle_no_link(request, user_id, job_id):
-    # Assuming the user is authenticated and a resume exists
-    resume = ResumeUpload.objects.filter(user_id=user_id).first()  # Fetch the user's resume
+from django.contrib.auth.decorators import login_required
 
-    if not resume:
-        # Handle the case where no resume is found
-        return render(request, 'error_page.html', {'message': 'No resume found for this user.'})
+@login_required_custom
+def handle_no_link(request, user_id, job_id):
+    # Fetch all resumes of the user
+    resumes = ResumeUpload.objects.filter(user_id=user_id)
 
     # Fetch provider_id from Job model
-    provider_id = Job.objects.get(id=job_id).provider.id
+    job = get_object_or_404(Job, id=job_id)
+    provider_id = job.provider.id
 
-    # Check if an application already exists for the same user, job, and provider
-    existing_application = JobApplication.objects.filter(
-        user_id=user_id,
-        job_id=job_id,
-        provider_id=provider_id
-    ).first()
+    # Process resumes to create a modified URL
+    for resume in resumes:
+        if resume.uploaded_file and resume.uploaded_file.url:
+            url = resume.uploaded_file.url
+            if 'upload/' in url:
+                split_url = url.split('upload/')
+                modified_url = split_url[0] + 'upload/f_auto,q_auto/' + split_url[1]
+                resume.modified_url = modified_url  # Add the modified URL to the resume object
 
-    if existing_application:
-        # Show already applied pop-up or message
-        return render(request, 'error_page.html', {'message': 'You have already applied for this job.'})
+    if request.method == "POST":
+        selected_resume_id = request.POST.get('resume_id')
+        resume = ResumeUpload.objects.get(id=selected_resume_id)  # Get the selected resume
 
-    # If no existing application, create a new one
-    JobApplication.objects.create(
-        user_id=user_id,
-        resume=resume,
-        job_id=job_id,
-        provider_id=provider_id
-    )
+        # Check if an application already exists for the same user, job, and provider
+        existing_application = JobApplication.objects.filter(
+            user_id=user_id,
+            job_id=job_id,
+            provider_id=provider_id
+        ).first()
 
-    return render(request, 'thank_you.html')  # Redirect to thank you page
+        if existing_application:
+            # Show already applied message
+            return render(request, 'error_page.html', {'message': 'You have already applied for this job.'})
+
+        # If no existing application, create a new one
+        JobApplication.objects.create(
+            user_id=user_id,
+            resume=resume,
+            job_id=job_id,
+            provider_id=provider_id
+        )
+
+        return render(request, 'thank_you.html')  # Redirect to thank you page
+
+    return render(request, 'select_resume.html', {
+        'job': job,
+        'resumes': resumes  # Pass the resumes with the modified URL to the template
+    })
 
 
 
@@ -915,7 +926,7 @@ def provider_applications(request):
             if 'upload/' in url:
                 split_url = url.split('upload/')
                 modified_url = split_url[0] + 'upload/f_auto,q_auto/' + split_url[1]
-                application.modified_resume_url = modified_url  # Add modified URL to the application object
+                application.modified_resume_url = modified_url  
 
     context = {
         'applications': applications
@@ -2301,3 +2312,26 @@ def add_admin(request):
 
     return render(request, 'add_admin.html', {'form': form})
 
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import ResumeUpload
+
+@login_required_custom
+def list_resumes(request):
+    # Fetch all resumes of the currently logged-in user
+    resumes = ResumeUpload.objects.filter(user_id=request.user.id)
+
+    # Process resumes to create a modified URL
+    for resume in resumes:
+        if resume.uploaded_file and resume.uploaded_file.url:
+            url = resume.uploaded_file.url
+            if 'upload/' in url:
+                split_url = url.split('upload/')
+                modified_url = split_url[0] + 'upload/f_auto,q_auto/' + split_url[1]
+                resume.modified_url = modified_url  # Add the modified URL to the resume object
+
+    return render(request, 'list_resumes.html', {
+        'resumes': resumes  # Pass the resumes with modified URLs to the template
+    })

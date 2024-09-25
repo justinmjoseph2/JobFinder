@@ -32,7 +32,6 @@ class Provider(models.Model):
 
 
 
-# Create your models here.
 class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     customer_name = models.CharField(max_length=100)
@@ -105,14 +104,14 @@ class JobApplication(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     provider = models.ForeignKey('Provider', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')  # New status field
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
 
     def __str__(self):
         return f"Application for {self.job.title} by {self.user.username}"
 
 
 from django.db import models
-from django.contrib.auth.models import User  # Import the User model
+from django.contrib.auth.models import User
 
 class Admin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

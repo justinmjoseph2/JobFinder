@@ -60,6 +60,9 @@ urlpatterns = [
     path('provider/notifications/mark-as-read/<int:notification_id>/', views.mark_as_read, name='mark_as_read'),
     path('notifications/delete/<int:notification_id>/', views.delete_notification, name='delete_notification'),
     path('generate-signed-url/', views.GenerateSignedURLView.as_view(), name='generate_signed_url'),
+    path('list_resumes/', views.list_resumes, name='list_resumes'),
+
+    
 
 
     #Admin
